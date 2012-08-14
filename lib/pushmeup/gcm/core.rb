@@ -1,21 +1,31 @@
 require 'httparty'
-require 'cgi'
+# require 'cgi'
 require 'json'
 
-class GCM
+module GCM
   include HTTParty
   
   @host = 'https://android.googleapis.com/gcm/send'
-  
-  @base_uri = 'https://android.googleapis.com/gcm/send'
-  @timeout = 30
-  @format = :json
   @key = nil
+  @format = :json
 
   class << self
-    attr_accessor :base_uri, :timeout, :format, :key
+    attr_accessor :host, :format, :key
   end
-
+  
+  def self.send_notification(device_tokens, data = {}, options = {})
+    n = GCM::Notification.new(device_tokens, data, options)
+    self.send_notifications([n])
+  end
+  
+  def self.send_notifications(notifications)
+    responses = []
+    notifications.each do |n|
+      responses << self.prepare_and_send(n)
+    end
+    responses
+  end
+  
   # {
   # "collapse_key": "score_update",
   # "time_to_live": 108,
@@ -28,30 +38,69 @@ class GCM
   # }
   # gcm = GCM.new(api_key)
   # gcm.send_notification({registration_ids: ["4sdsx", "8sdsd"], data: {score: "5x1"}})
-  def self.send_notification(registration_ids, options = {})
-    post_body = build_post_body(registration_ids, options)
 
-    params = {
-      :body => post_body.to_json,
-      :headers => {
-        'Authorization' => "key=#{@key}",
-        'Content-Type' => 'application/json',
-      }
-    }
-
-    response = self.post(@base_uri, params)
-    build_response(response)
-    # {body: response.body, headers: response.headers, status: response.code}
-  end
+  # def self.send_notification(registration_ids, options = {})
+  #   post_body = build_post_body(registration_ids, options)
+  # 
+  #   type = (@format == :json) ? 'application/json' : 'application/x-www-form-urlencoded;charset=UTF-8'
+  # 
+  #   params = {
+  #     :body => post_body.to_json,
+  #     :headers => {
+  #       'Authorization' => "key=#{@key}",
+  #       'Content-Type' => type,
+  #     }
+  #   }
+  # 
+  #   response = self.post(@base_uri, params)
+  #   build_response(response)
+  #   # {body: response.body, headers: response.headers, status: response.code}
+  # end
 
   private
-
-  def self.build_post_body(registration_ids, options={})
-    body = {:registration_ids => registration_ids}.merge(options)
-    #p body
-    #raise exception if options[:time_to_live] && !options[:collapse_key]
+  
+  def self.prepare_and_send(n)
+    if n.device_tokens.count < 1 || n.device_tokens.count > 1000
+      raise "Number of device_tokens invalid, keep it betwen 1 and 1000"
+    end
+    if !n.collapse_key.nil? && n.time_to_live.nil?
+      raise %q{If you are defining a "colapse key" you need a "time to live"}
+    end
+    
+    params = {}
+    if self.format == :json
+      headers = {
+        'Authorization' => "key=AIzaSyDT4eO5Zy1iAvHnf3qAkM6gcJiGvvNoAVY#{self.key}",
+        'Content-Type' => 'application/json',
+      }
+      body = {
+        :registration_ids => n.device_tokens,
+        :data => n.data,
+        :collapse_key => n.collapse_key,
+        :time_to_live => n.time_to_live,
+        :delay_while_idle => n.delay_while_idle
+      }
+      p body
+      p body.to_json
+      return self.send_notification_to_server(headers, body.to_json)
+    elsif self.format == :text
+      raise "To be done: http://developer.android.com/guide/google/gcm/gcm.html"
+      headers = {
+        'Authorization' => "key=AIzaSyDT4eO5Zy1iAvHnf3qAkM6gcJiGvvNoAVY#{self.key}",
+        'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+      }
+      return self.send_notification_to_server(headers, body)
+    else
+      raise "Invalid format"
+    end
   end
-
+  
+  def self.send_notification_to_server(headers, body)
+    params = {:headers => headers, :body => body}
+    response = self.post('https://android.googleapis.com/gcm/send', params)
+    return build_response(response)
+  end
+  
   def self.build_response(response)
     case response.code
       when 200
@@ -66,4 +115,5 @@ class GCM
         {:response => 'Server is temporarily unavailable.', :status_code => response.code}
     end
   end
+  
 end

@@ -16,8 +16,42 @@ describe Pushmeup do
   end
   
   describe "GCM" do
-    it "should have a APNS object" do
+    it "should have a GCM object" do
       defined?(GCM).should_not be_false
+    end
+    
+    describe "Notifications" do
+      
+      before do
+        @options = {:data => "dummy data"}
+      end
+
+      it "should allow only notifications with device_tokens as array" do
+        n = GCM::Notification.new("id", @options)
+        n.device_tokens.is_a?(Array).should be_true
+
+        n.device_tokens = ["a" "b", "c"]
+        n.device_tokens.is_a?(Array).should be_true
+
+        n.device_tokens = "a"
+        n.device_tokens.is_a?(Array).should be_true
+      end
+
+      it "should allow only notifications with data as hash with :data root" do
+        n = GCM::Notification.new("id", {:data => "data"})
+        
+        n.data.is_a?(Hash).should be_true
+        n.data.should == {:data => "data"}
+
+        n.data = ["a", "b", "c"]
+        n.data.is_a?(Hash).should be_true
+        n.data.should == {:data => ["a", "b", "c"]}
+        
+        n.data = "a"
+        n.data.is_a?(Hash).should be_true
+        n.data.should == {:data => "a"}
+      end
+      
     end
   end
 end
