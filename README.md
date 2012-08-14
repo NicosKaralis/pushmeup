@@ -1,24 +1,14 @@
-# Pushmeup
-
-TODO: Write a gem description
+# Periodic Table
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'pushmeup'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install pushmeup
+    gem install pushmeup
 
 ## Usage
 
-TODO: Write usage instructions here
+    require 'pushmeup'
+
+    # TODO: Make usage cases
 
 ## Contributing
 
