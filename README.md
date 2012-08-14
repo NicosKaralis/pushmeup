@@ -1,5 +1,7 @@
 # Periodic Table
 
+[![Build Status](https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master)](http://travis-ci.org/NicosKaralis/pushmeup)
+
 ## Installation
 
     gem install pushmeup

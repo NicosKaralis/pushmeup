@@ -47,7 +47,7 @@ class GCM
   private
 
   def self.build_post_body(registration_ids, options={})
-    body = {registration_ids: registration_ids}.merge(options)
+    body = {:registration_ids => registration_ids}.merge(options)
     #p body
     #raise exception if options[:time_to_live] && !options[:collapse_key]
   end
@@ -55,15 +55,15 @@ class GCM
   def self.build_response(response)
     case response.code
       when 200
-        {response: 'success', body: response.body, headers: response.headers, status_code: response.code}
+        {:response =>  'success', :body => response.body, :headers => response.headers, :status_code => response.code}
       when 400
-        {response: 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields.', status_code: response.code}
+        {:response => 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields.', :status_code => response.code}
       when 401
-        {response: 'There was an error authenticating the sender account.', status_code: response.code}
+        {:response => 'There was an error authenticating the sender account.', :status_code => response.code}
       when 500
-        {response: 'There was an internal error in the GCM server while trying to process the request.', status_code: response.code}
+        {:response => 'There was an internal error in the GCM server while trying to process the request.', :status_code => response.code}
       when 503
-        {response: 'Server is temporarily unavailable.', status_code: response.code}
+        {:response => 'Server is temporarily unavailable.', :status_code => response.code}
     end
   end
 end
