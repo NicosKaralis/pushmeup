@@ -1,4 +1,4 @@
-## Pushmeup
+# Pushmeup
 
 ### a gem for various push notification services.
 
@@ -94,7 +94,6 @@ this will result in a payload like this:
     }
 
 ## GCM (Google Cloud Messaging)
-
 
 ## Build Status [![Build Status](https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master)](http://travis-ci.org/NicosKaralis/pushmeup) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/NicosKaralis/pushmeup)
 
