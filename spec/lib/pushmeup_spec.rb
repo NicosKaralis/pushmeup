@@ -8,7 +8,7 @@ describe Pushmeup do
     
     it "should not forget the APNS default parameters" do
       APNS.host.should == "gateway.sandbox.push.apple.com"
-      APNS.port.should be_equal(2195)
+      APNS.port.should == 2195
       APNS.pem.should be_equal(nil)
       APNS.pass.should be_equal(nil)
     end
