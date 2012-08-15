@@ -6,8 +6,8 @@ module GCM
   include HTTParty
   
   @host = 'https://android.googleapis.com/gcm/send'
-  @key = nil
   @format = :json
+  @key = nil
 
   class << self
     attr_accessor :host, :format, :key
@@ -25,37 +25,6 @@ module GCM
     end
     responses
   end
-  
-  # {
-  # "collapse_key": "score_update",
-  # "time_to_live": 108,
-  # "delay_while_idle": true,
-  # "registration_ids": ["4", "8", "15", "16", "23", "42"],
-  # "data" : {
-  # "score": "5x1",
-  # "time": "15:10"
-  # }
-  # }
-  # gcm = GCM.new(api_key)
-  # gcm.send_notification({registration_ids: ["4sdsx", "8sdsd"], data: {score: "5x1"}})
-
-  # def self.send_notification(registration_ids, options = {})
-  #   post_body = build_post_body(registration_ids, options)
-  # 
-  #   type = (@format == :json) ? 'application/json' : 'application/x-www-form-urlencoded;charset=UTF-8'
-  # 
-  #   params = {
-  #     :body => post_body.to_json,
-  #     :headers => {
-  #       'Authorization' => "key=#{@key}",
-  #       'Content-Type' => type,
-  #     }
-  #   }
-  # 
-  #   response = self.post(@base_uri, params)
-  #   build_response(response)
-  #   # {body: response.body, headers: response.headers, status: response.code}
-  # end
 
   private
   
@@ -92,7 +61,7 @@ module GCM
   end
   
   def self.send_push_as_plain_text(n)
-    raise "To be done: http://developer.android.com/guide/google/gcm/gcm.html"
+    raise "Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html"
     headers = {
       'Authorization' => "key=#{self.key}",
       'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',

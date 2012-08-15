@@ -16,7 +16,7 @@ Currently we have only support for ``iOS`` and ``Android`` but we are planning c
 
 ## Installation
 
-    gem install pushmeup
+    $ gem install pushmeup
     
 or add to your ``Gemfile``
 
@@ -24,7 +24,7 @@ or add to your ``Gemfile``
     
 and install it with
 
-    bundle install
+    $ bundle install
 
 ## APNS (Apple iOS)
 
@@ -36,7 +36,7 @@ and install it with
 
 2. Run the following command to convert the ``p12`` to a ``pem`` file
 
-        openssl pkcs12 -in cert.p12 -out cert.pem -nodes -clcerts
+        $ openssl pkcs12 -in cert.p12 -out cert.pem -nodes -clcerts
 
 3. After you have created your ``pem`` file. Set what host, port, certificate file location on the APNS class. You just need to set this once:
 
@@ -94,6 +94,64 @@ this will result in a payload like this:
     }
 
 ## GCM (Google Cloud Messaging)
+
+### Configure
+
+		GCM.host = 'https://android.googleapis.com/gcm/send'
+		# https://android.googleapis.com/gcm/send is default
+
+		GCM.format = :json
+		# :json is default and only available at the moment
+
+		GCM.key = "123abc456def"
+		# this is the apiKey obtained from here https://code.google.com/apis/console/
+		
+### Usage
+
+#### Sending a single notification:
+
+		destination = ["device1", "device2", "device3"]
+		# can be an string or an array of strings containing the regIds of the devices you want to send
+
+		data = {:key => "value", :key2 => ["array", "value"]}
+		# must be an hash with all values you want inside you notification
+
+		GCM.send_notification( destination )
+		# Empty notification
+
+		GCM.send_notification( destination, data )
+		# Notification with custom information
+
+		GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false )
+		# Notification with custom information and parameters
+
+for more information on parameters check documentation: [GCM | Android Developers](http://developer.android.com/guide/google/gcm/gcm.html#request)
+
+#### Sending multiple notifications:
+
+		destination1 = "device1"
+		destination2 = ["device2"]
+		destination3 = ["device1", "device2", "device3"]
+		# can be an string or an array of strings containing the regIds of the devices you want to send
+
+		data1 = {:key => "value", :key2 => ["array", "value"]}
+		# must be an hash with all values you want inside you notification
+		
+		options1 = {:collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false}
+		# options for the notification
+		
+		n1 = GCM::Notification.new(destination1, data1, options1)
+		n2 = GCM::Notification.new(destination2, data2)
+		n3 = GCM::Notification.new(destination3, data3, options2)
+
+		GCM.send_notifications( [n1, n2, n3] )
+		# In this case, every notification has his own parameters
+	
+for more information on parameters check documentation: [GCM | Android Developers](http://developer.android.com/guide/google/gcm/gcm.html#request)
+
+#### Getting your Android device token (regId)
+
+Check this link [GCM: Getting Started](http://developer.android.com/guide/google/gcm/gs.html)
 
 ## Build Status [![Build Status](https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master)](http://travis-ci.org/NicosKaralis/pushmeup) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/NicosKaralis/pushmeup)
 

@@ -34,15 +34,15 @@ else
 fi
 
 # If you use bundler, this might be useful to you:
-# if [[ -s Gemfile ]] && {
-#   ! builtin command -v bundle >/dev/null ||
-#   builtin command -v bundle | grep $rvm_path/bin/bundle >/dev/null
-# }
-# then
-#   printf "%b" "The rubygem 'bundler' is not installed. Installing it now.\n"
-#   gem install bundler
-# fi
-# if [[ -s Gemfile ]] && builtin command -v bundle >/dev/null
-# then
-#   bundle install | grep -vE '^Using|Your bundle is complete'
-# fi
+if [[ -s Gemfile ]] && {
+  ! builtin command -v bundle >/dev/null ||
+  builtin command -v bundle | grep $rvm_path/bin/bundle >/dev/null
+}
+then
+  printf "%b" "The rubygem 'bundler' is not installed. Installing it now.\n"
+  gem install bundler
+fi
+if [[ -s Gemfile ]] && builtin command -v bundle >/dev/null
+then
+  bundle install | grep -vE '^Using|Your bundle is complete'
+fi
