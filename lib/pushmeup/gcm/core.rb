@@ -78,7 +78,7 @@ module GCM
   def self.build_response(response)
     case response.code
       when 200
-        {:response =>  'success', :body => response.body, :headers => response.headers, :status_code => response.code}
+        {:response =>  'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => response.code}
       when 400
         {:response => 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields.', :status_code => response.code}
       when 401
