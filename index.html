@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Pushmeup : This gem is a wrapper to send push notifications to devices. Currently it only sends to Android or iOS devices, but more platforms will be added soon. With APNS (Apple Push Notifications Service) you can send push notifications to Apple devices. With GCM (Google Cloud Messaging) you can send push notifications to Android devices." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Pushmeup</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/NicosKaralis/pushmeup">View on GitHub</a>
+
+          <h1 id="project_title">Pushmeup</h1>
+          <h2 id="project_tagline">This gem is a wrapper to send push notifications to devices. Currently it only sends to Android or iOS devices, but more platforms will be added soon. With APNS (Apple Push Notifications Service) you can send push notifications to Apple devices. With GCM (Google Cloud Messaging) you can send push notifications to Android devices.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/NicosKaralis/pushmeup/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/NicosKaralis/pushmeup/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Pushmeup</h1>
+
+<h3>a gem for various push notification services.</h3>
+
+<h2>Goals</h2>
+
+<p>Pushmeup is an attempt to create an push notifications center that could send push to devices like:</p>
+
+<ul>
+<li>Android</li>
+<li>iOS</li>
+<li>Mac OS X</li>
+<li>Windows Phone</li>
+<li>And many others</li>
+</ul><p>Currently we have only support for <code>iOS</code> and <code>Android</code> but we are planning code for more plataforms.</p>
+
+<h2>Installation</h2>
+
+<pre><code>$ gem install pushmeup
+</code></pre>
+
+<p>or add to your <code>Gemfile</code></p>
+
+<pre><code>gem 'pushmeup'
+</code></pre>
+
+<p>and install it with</p>
+
+<pre><code>$ bundle install
+</code></pre>
+
+<h2>APNS (Apple iOS)</h2>
+
+<h3>Configure</h3>
+
+<ol>
+<li>
+<p>In Keychain access export your certificate and your private key as a <code>p12</code>.</p>
+
+<p><img src="https://raw.github.com/NicosKaralis/pushmeup/master/Keychain%20Access.jpg" alt="Keychain Access"></p>
+</li>
+<li>
+<p>Run the following command to convert the <code>p12</code> to a <code>pem</code> file</p>
+
+<pre><code>$ openssl pkcs12 -in cert.p12 -out cert.pem -nodes -clcerts
+</code></pre>
+</li>
+<li>
+<p>After you have created your <code>pem</code> file. Set what host, port, certificate file location on the APNS class. You just need to set this once:</p>
+
+<pre><code>APNS.host = 'gateway.push.apple.com' 
+# gateway.sandbox.push.apple.com is default
+
+APNS.port = 2195 
+# this is also the default. Shouldn't ever have to set this, but just in case Apple goes crazy, you can.
+
+APNS.pem  = '/path/to/pem/file'
+# this is the file you just created
+
+APNS.pass = ''
+# Just in case your pem need a password
+</code></pre>
+</li>
+</ol><h3>Usage</h3>
+
+<h4>Sending a single notification:</h4>
+
+<pre><code>    device_token = '123abc456def'
+    APNS.send_notification(device_token, 'Hello iPhone!' )
+    APNS.send_notification(device_token, :alert =&gt; 'Hello iPhone!', :badge =&gt; 1, :sound =&gt; 'default')
+</code></pre>
+
+<h4>Sending multiple notifications</h4>
+
+<pre><code>    device_token = '123abc456def'
+    n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
+    n2 = APNS::Notification.new(device_token, :alert =&gt; 'Hello iPhone!', :badge =&gt; 1, :sound =&gt; 'default')
+    APNS.send_notifications([n1, n2])
+</code></pre>
+
+<h4>Sending more information along</h4>
+
+<pre><code>    APNS.send_notification(device_token, :alert =&gt; 'Hello iPhone!', :badge =&gt; 1, :sound =&gt; 'default', 
+                                        :other =&gt; {:sent =&gt; 'with apns gem', :custom_param =&gt; "value"})
+</code></pre>
+
+<p>this will result in a payload like this:</p>
+
+<pre><code>    {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default"},"sent":"with apns gem", "custom_param":"value"}
+</code></pre>
+
+<h3>Getting your iOS device token</h3>
+
+<pre><code>- (void)applicationDidFinishLaunching:(UIApplication *)application {
+    // Register with apple that this app will use push notification
+    ...
+
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeBadge)];
+
+    ...
+
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // Show the device token obtained from apple to the log
+    NSLog("deviceToken: %", deviceToken);
+}
+</code></pre>
+
+<h2>GCM (Google Cloud Messaging)</h2>
+
+<h3>Configure</h3>
+
+<pre><code>    GCM.host = 'https://android.googleapis.com/gcm/send'
+    # https://android.googleapis.com/gcm/send is default
+
+    GCM.format = :json
+    # :json is default and only available at the moment
+
+    GCM.key = "123abc456def"
+    # this is the apiKey obtained from here https://code.google.com/apis/console/
+</code></pre>
+
+<h3>Usage</h3>
+
+<h4>Sending a single notification:</h4>
+
+<pre><code>    destination = ["device1", "device2", "device3"]
+    # can be an string or an array of strings containing the regIds of the devices you want to send
+
+    data = {:key =&gt; "value", :key2 =&gt; ["array", "value"]}
+    # must be an hash with all values you want inside you notification
+
+    GCM.send_notification( destination )
+    # Empty notification
+
+    GCM.send_notification( destination, data )
+    # Notification with custom information
+
+    GCM.send_notification( destination, data, :collapse_key =&gt; "placar_score_global", :time_to_live =&gt; 3600, :delay_while_idle =&gt; false )
+    # Notification with custom information and parameters
+</code></pre>
+
+<p>for more information on parameters check documentation: <a href="http://developer.android.com/guide/google/gcm/gcm.html#request">GCM | Android Developers</a></p>
+
+<h4>Sending multiple notifications:</h4>
+
+<pre><code>    destination1 = "device1"
+    destination2 = ["device2"]
+    destination3 = ["device1", "device2", "device3"]
+    # can be an string or an array of strings containing the regIds of the devices you want to send
+
+    data1 = {:key =&gt; "value", :key2 =&gt; ["array", "value"]}
+    # must be an hash with all values you want inside you notification
+
+    options1 = {:collapse_key =&gt; "placar_score_global", :time_to_live =&gt; 3600, :delay_while_idle =&gt; false}
+    # options for the notification
+
+    n1 = GCM::Notification.new(destination1, data1, options1)
+    n2 = GCM::Notification.new(destination2, data2)
+    n3 = GCM::Notification.new(destination3, data3, options2)
+
+    GCM.send_notifications( [n1, n2, n3] )
+    # In this case, every notification has his own parameters
+</code></pre>
+
+<p>for more information on parameters check documentation: <a href="http://developer.android.com/guide/google/gcm/gcm.html#request">GCM | Android Developers</a></p>
+
+<h4>Getting your Android device token (regId)</h4>
+
+<p>Check this link <a href="http://developer.android.com/guide/google/gcm/gs.html">GCM: Getting Started</a></p>
+
+<h2>Build Status <a href="http://travis-ci.org/NicosKaralis/pushmeup"><img src="https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master" alt="Build Status"></a> <a href="https://codeclimate.com/github/NicosKaralis/pushmeup"><img src="https://codeclimate.com/badge.png" alt="Code Climate"></a>
+</h2>
+
+<h2>Dependency Status <a href="https://gemnasium.com/NicosKaralis/pushmeup"><img src="https://gemnasium.com/NicosKaralis/pushmeup.png?travis" alt="Dependency Status"></a>
+</h2>
+
+<h2>License</h2>
+
+<p>Pushmeup is released under the MIT license:</p>
+
+<p><a href="http://www.opensource.org/licenses/MIT">http://www.opensource.org/licenses/MIT</a></p>
+
+<h3>Welcome to GitHub Pages.</h3>
+
+<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+
+<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+
+<h3>Designer Templates</h3>
+
+<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+
+<h3>Rather Drive Stick?</h3>
+
+<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+
+<h3>Authors and Contributors</h3>
+
+<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+
+<h3>Support or Contact</h3>
+
+<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Pushmeup maintained by <a href="https://github.com/NicosKaralis">NicosKaralis</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-23976290-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
