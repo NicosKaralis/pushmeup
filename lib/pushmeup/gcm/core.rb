@@ -67,35 +67,40 @@ module GCM
       raise %q{If you are defining a "colapse key" you need a "time to live"}
     end
     
-    params = {}
     if self.format == :json
-      headers = {
-        'Authorization' => "key=AIzaSyDT4eO5Zy1iAvHnf3qAkM6gcJiGvvNoAVY#{self.key}",
-        'Content-Type' => 'application/json',
-      }
-      body = {
-        :registration_ids => n.device_tokens,
-        :data => n.data,
-        :collapse_key => n.collapse_key,
-        :time_to_live => n.time_to_live,
-        :delay_while_idle => n.delay_while_idle
-      }
-      p body
-      p body.to_json
-      return self.send_notification_to_server(headers, body.to_json)
+      self.send_push_as_json(n)
     elsif self.format == :text
-      raise "To be done: http://developer.android.com/guide/google/gcm/gcm.html"
-      headers = {
-        'Authorization' => "key=AIzaSyDT4eO5Zy1iAvHnf3qAkM6gcJiGvvNoAVY#{self.key}",
-        'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
-      }
-      return self.send_notification_to_server(headers, body)
+      self.send_push_as_plain_text(n)
     else
       raise "Invalid format"
     end
   end
   
-  def self.send_notification_to_server(headers, body)
+  def self.send_push_as_json(n)
+    headers = {
+      'Authorization' => "key=#{self.key}",
+      'Content-Type' => 'application/json',
+    }
+    body = {
+      :registration_ids => n.device_tokens,
+      :data => n.data,
+      :collapse_key => n.collapse_key,
+      :time_to_live => n.time_to_live,
+      :delay_while_idle => n.delay_while_idle
+    }
+    return self.send_to_server(headers, body.to_json)
+  end
+  
+  def self.send_push_as_plain_text(n)
+    raise "To be done: http://developer.android.com/guide/google/gcm/gcm.html"
+    headers = {
+      'Authorization' => "key=#{self.key}",
+      'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+    }
+    return self.send_to_server(headers, body)
+  end
+  
+  def self.send_to_server(headers, body)
     params = {:headers => headers, :body => body}
     response = self.post('https://android.googleapis.com/gcm/send', params)
     return build_response(response)

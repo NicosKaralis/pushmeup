@@ -43,13 +43,13 @@ describe Pushmeup do
         n.data.is_a?(Hash).should be_true
         n.data.should == {:data => "data"}
 
-        n.data = ["a", "b", "c"]
+        n.data = {:a => ["a", "b", "c"]}
         n.data.is_a?(Hash).should be_true
-        n.data.should == {:data => ["a", "b", "c"]}
+        n.data.should == {:a => ["a", "b", "c"]}
         
-        n.data = "a"
+        n.data = {:a => "a"}
         n.data.is_a?(Hash).should be_true
-        n.data.should == {:data => "a"}
+        n.data.should == {:a => "a"}
       end
       
     end
