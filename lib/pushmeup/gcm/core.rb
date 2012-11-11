@@ -11,6 +11,15 @@ module GCM
 
   class << self
     attr_accessor :host, :format, :key
+    
+    def key(identity = nil)
+      if @key.is_a?(Hash)
+        raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!} if identity.nil?
+        return @key[identity]
+      else
+        return @key
+      end
+    end
   end
   
   def self.send_notification(device_tokens, data = {}, options = {})
@@ -50,7 +59,7 @@ module GCM
   
   def self.send_push_as_json(n)
     headers = {
-      'Authorization' => "key=#{ self.key.is_a?(Hash) ? self.key[n.identity] : self.key }",
+      'Authorization' => "key=#{ self.key(n.identity) }",
       'Content-Type' => 'application/json',
     }
     body = {
@@ -67,7 +76,7 @@ module GCM
     raise "Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html"
     headers = {
       # TODO: Aceitar key ser um hash
-      'Authorization' => "key=#{ self.key.is_a?(Hash) ? self.key[n.identity] : self.key }",
+      'Authorization' => "key=#{ self.key(n.identity) }",
       'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
     }
     return self.send_to_server(headers, body)

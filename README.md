@@ -166,24 +166,24 @@ You can use multiple keys to send notifications, to do it just do this changes i
 #### Usage
 
 		# For single notification
-    GCM.send_notification( destination, :identity => :key1 )
-    # Empty notification
-
-    GCM.send_notification( destination, data, :identity => :key1 )
-    # Notification with custom information
-
-    GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
-    # Notification with custom information and parameters
-
+		GCM.send_notification( destination, :identity => :key1 )
+		# Empty notification
+		
+		GCM.send_notification( destination, data, :identity => :key1 )
+		# Notification with custom information
+		
+		GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
+		# Notification with custom information and parameters
+		
 		# For multiple notifications
 		options1 = {}
 		options2 = {..., :identity => :key2}
 		n1 = GCM::Notification.new(destination1, data1, options1.merge({:identity => :key2}))
 		n2 = GCM::Notification.new(destination2, data2, :identity => :key1)
-    n3 = GCM::Notification.new(destination3, data3, options2)
-
-    GCM.send_notifications( [n1, n2, n3] )
-    # In this case, every notification has his own parameters, options and key
+		n3 = GCM::Notification.new(destination3, data3, options2)
+		
+		GCM.send_notifications( [n1, n2, n3] )
+		# In this case, every notification has his own parameters, options and key
 
 ## Build Status [![Build Status](https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master)](http://travis-ci.org/NicosKaralis/pushmeup) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/NicosKaralis/pushmeup)
 
