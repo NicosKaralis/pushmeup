@@ -38,7 +38,7 @@ and install it with
 
         $ openssl pkcs12 -in cert.p12 -out cert.pem -nodes -clcerts
 
-3. After you have created your ``pem`` file. Set what host, port, certificate file location on the APNS class. You just need to set this once:
+3. After you have created your ``pem`` file. Set the host, port and certificate file location on the APNS class. You just need to set this once:
 
         APNS.host = 'gateway.push.apple.com' 
         # gateway.sandbox.push.apple.com is default
@@ -152,6 +152,38 @@ for more information on parameters check documentation: [GCM | Android Developer
 #### Getting your Android device token (regId)
 
 Check this link [GCM: Getting Started](http://developer.android.com/guide/google/gcm/gs.html)
+
+### (Optional) You can add multiple keys for GCM
+
+You can use multiple keys to send notifications, to do it just do this changes in the code 
+
+#### Configure
+
+		GCM.key = { :key1 => "123abc456def", :key2 => "456def123abc" }
+		# the ``:key1`` and the ``:key2`` can be any object, they can be the projectID, the date, the version, doesn't matter.
+		# The only restrain is: they need to be valid keys for a hash.
+
+#### Usage
+
+		# For single notification
+    GCM.send_notification( destination, :identity => :key1 )
+    # Empty notification
+
+    GCM.send_notification( destination, data, :identity => :key1 )
+    # Notification with custom information
+
+    GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
+    # Notification with custom information and parameters
+
+		# For multiple notifications
+		options1 = {}
+		options2 = {..., :identity => :key2}
+		n1 = GCM::Notification.new(destination1, data1, options1.merge({:identity => :key2}))
+		n2 = GCM::Notification.new(destination2, data2, :identity => :key1)
+    n3 = GCM::Notification.new(destination3, data3, options2)
+
+    GCM.send_notifications( [n1, n2, n3] )
+    # In this case, every notification has his own parameters, options and key
 
 ## Build Status [![Build Status](https://secure.travis-ci.org/NicosKaralis/pushmeup.png?branch=master)](http://travis-ci.org/NicosKaralis/pushmeup) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/NicosKaralis/pushmeup)
 

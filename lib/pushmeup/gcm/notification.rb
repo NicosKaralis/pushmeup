@@ -1,6 +1,6 @@
 module GCM
   class Notification
-    attr_accessor :device_tokens, :data, :collapse_key, :time_to_live, :delay_while_idle
+    attr_accessor :device_tokens, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity
     
     def initialize(tokens, data, options = {})
       self.device_tokens = tokens
@@ -9,6 +9,7 @@ module GCM
       @collapse_key = options[:collapse_key]
       @time_to_live = options[:time_to_live]
       @delay_while_idle = options[:delay_while_idle]
+      @identity = options[:identity]
     end
     
     def device_tokens=(tokens)

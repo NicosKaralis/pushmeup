@@ -32,19 +32,20 @@ module APNS
   
   def self.feedback
     raise "Not implemented yet"
-    # sock, ssl = self.feedback_connection
-    # 
-    # apns_feedback = []
-    # while line = ssl.read(38) # Read lines from the socket
-    #   line.strip!
-    #   f = line.unpack('N1n1H140')
-    #   apns_feedback << [Time.at(f[0]), f[1], f[2]]
-    # end
-    # 
-    # ssl.close
-    # sock.close
-    # 
-    # return apns_feedback
+    sock, ssl = self.feedback_connection
+
+    apns_feedback = []
+
+    while line = sock.gets   # Read lines from the socket
+      line.strip!
+      f = line.unpack('N1n1H140')
+      apns_feedback << [Time.at(f[0]), f[2]]
+    end
+
+    ssl.close
+    sock.close
+
+    return apns_feedback
   end
   
   protected
@@ -64,32 +65,22 @@ module APNS
     return sock, ssl
   end
   
-  # def self.feedback_connection
-  #   raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-  #   raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-  #   
-  #   context      = OpenSSL::SSL::SSLContext.new
-  #   context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-  #   context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-  #   context.verify_mode = OpenSSL::SSL::VERIFY_NONE
-  #   
-  #   fhost = self.host.gsub('gateway','feedback')
-  #   puts fhost
-  #   
-  #   sock         = TCPSocket.new(fhost, 2196)
-  #   ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
-  #   # ssl.connect
-  #   
-  #   ssl.sync_close = true
-  #   ssl.connect
-  # 
-  #   ssl.puts("GET / HTTP/1.0")
-  #   ssl.puts("")
-  #   while line = ssl.gets
-  #     puts line
-  #   end
-  #   
-  #   return sock, ssl
-  # end
+  def self.feedback_connection
+    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
+    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
+    
+    context      = OpenSSL::SSL::SSLContext.new
+    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
+    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    
+    fhost = self.host.gsub('gateway','feedback')
+    puts fhost
+    
+    sock         = TCPSocket.new(fhost, 2196)
+    ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
+    ssl.connect
+
+    return sock, ssl
+  end
   
 end

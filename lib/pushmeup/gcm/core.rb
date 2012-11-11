@@ -35,6 +35,9 @@ module GCM
     if !n.collapse_key.nil? && n.time_to_live.nil?
       raise %q{If you are defining a "colapse key" you need a "time to live"}
     end
+    if self.key.is_a?(Hash) && n.identity.nil?
+      raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!}
+    end
     
     if self.format == :json
       self.send_push_as_json(n)
@@ -47,7 +50,7 @@ module GCM
   
   def self.send_push_as_json(n)
     headers = {
-      'Authorization' => "key=#{self.key}",
+      'Authorization' => "key=#{ self.key.is_a?(Hash) ? self.key[n.identity] : self.key }",
       'Content-Type' => 'application/json',
     }
     body = {
@@ -63,7 +66,8 @@ module GCM
   def self.send_push_as_plain_text(n)
     raise "Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html"
     headers = {
-      'Authorization' => "key=#{self.key}",
+      # TODO: Aceitar key ser um hash
+      'Authorization' => "key=#{ self.key.is_a?(Hash) ? self.key[n.identity] : self.key }",
       'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
     }
     return self.send_to_server(headers, body)
