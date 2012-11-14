@@ -20,6 +20,14 @@ module GCM
         return @key
       end
     end
+    
+    def key_identities
+      if @key.is_a?(Hash)
+        return @key.keys
+      else
+        return nil
+      end
+    end
   end
   
   def self.send_notification(device_tokens, data = {}, options = {})
