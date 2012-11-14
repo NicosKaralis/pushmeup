@@ -44,7 +44,7 @@ module GCM
     if !n.collapse_key.nil? && n.time_to_live.nil?
       raise %q{If you are defining a "colapse key" you need a "time to live"}
     end
-    if self.key.is_a?(Hash) && n.identity.nil?
+    if @key.is_a?(Hash) && n.identity.nil?
       raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!}
     end
     
