@@ -23,15 +23,16 @@ module APNS
     sock, ssl = self.open_connection
     
     notifications.each do |n|
-      ssl.write(n.packaged_notification)
-    end
-    
+        ssl.write(n.packaged_notification)
+      end
+
     ssl.close
     sock.close
   end
   
   def self.feedback
-    raise "Not implemented yet"
+    # raise "Not implemented yet"
+    p "Please be aware that this method still haven't been fully tested yet, and it might return invalid data"
     sock, ssl = self.feedback_connection
 
     apns_feedback = []
@@ -77,7 +78,7 @@ module APNS
     puts fhost
     
     sock         = TCPSocket.new(fhost, 2196)
-    ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
+    ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
     ssl.connect
 
     return sock, ssl
