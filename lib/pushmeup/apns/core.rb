@@ -31,16 +31,14 @@ module APNS
   end
   
   def self.feedback
-    # raise "Not implemented yet"
-    p "Please be aware that this method still haven't been fully tested yet, and it might return invalid data"
     sock, ssl = self.feedback_connection
 
     apns_feedback = []
 
-    while line = sock.gets   # Read lines from the socket
+    while line = ssl.read(38)   # Read lines from the socket
       line.strip!
       f = line.unpack('N1n1H140')
-      apns_feedback << [Time.at(f[0]), f[2]]
+      apns_feedback << { timestamp: Time.at(f[0]), token: f[2] }
     end
 
     ssl.close
