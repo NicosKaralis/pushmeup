@@ -38,7 +38,7 @@ module APNS
     while line = ssl.read(38)   # Read lines from the socket
       line.strip!
       f = line.unpack('N1n1H140')
-      apns_feedback << { timestamp: Time.at(f[0]), token: f[2] }
+      apns_feedback << { :timestamp => Time.at(f[0]), :token => f[2] }
     end
 
     ssl.close
