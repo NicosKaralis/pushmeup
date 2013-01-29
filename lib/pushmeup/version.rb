@@ -1,3 +1,3 @@
 module Pushmeup
-  VERSION = "0.1.3.beta1"
+  VERSION = "0.1.4"
 end
