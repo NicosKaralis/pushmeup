@@ -213,7 +213,7 @@ You can use multiple keys to send notifications, to do it just do this changes i
     MPNS.send_notification( destination, title, message, data, options = { notification_class: 12 } )
     # Notification with title, message, custom data and custom options
 
-for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945(v=vs.105).aspx)
+for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945)
 
 #### Sending multiple notifications:
 
@@ -241,12 +241,12 @@ for more information on parameters check documentation: [Windows Phone Dev Cente
     MPNS.send_notifications( [n1, n2, n3] )
     # In this case, every notification has his own parameters
   
-for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945(v=vs.105).aspx)
+for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945)
 
 #### Getting your Microsoft Push Notification device url (device_url)
 
-Check this link [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202940(v=vs.105).aspx)
-and this for a detailed example [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202967(v=vs.105).aspx)
+Check this link [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202940)
+and this for a detailed example [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202967)
 
 #### Known limitations
 
