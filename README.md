@@ -12,7 +12,7 @@ Pushmeup is an attempt to create an push notifications center that could send pu
 - Windows Phone
 - And many others
 
-Currently we have only support for ``iOS`` and ``Android`` but we are planning code for more plataforms.
+Currently we have only support for ``iOS``, ``Android`` and ``Windows Phone`` but we are planning code for more plataforms.
 
 ## Installation
 
