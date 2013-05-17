@@ -7,10 +7,6 @@ module MPNS
       self.title = title
       self.message = message
       self.data = data
-      
-      @content_type = 'text/xml'
-      @target = 'toast'
-      @notification_class = options[:notification_class] ? options[:notification_class] : '2'
     end
   
     def packaged_message
