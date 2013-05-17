@@ -1,7 +1,10 @@
-require 'httparty'
-
 module MPNS
-  include HTTParty
+
+  @pem = nil
+
+  class << self
+    attr_accessor :pem
+  end
 
   def self.send_notification(device_url, title, message = '', data = {}, options = {})
     n = MPNS::Notification.new(device_url, title, message, data, options)
@@ -19,21 +22,22 @@ module MPNS
   protected
   
   def self.send(n)
-    return self.send_to_server(n.device_url, n.headers, n.packaged_message)
+    return self.send_to_server(n.device_url, n.packaged_message)
   end
 
-  def self.send_to_server(url, headers, body)
-    params = {:headers => headers, :body => body}
-    response = self.post(url, params)
-    return build_response(response)
+  def self.send_to_server(url, body)
+    # Had to use system call to curl since we could't get client authentication to work from within ruby (Net::HTTP)
+    # Details here: http://stackoverflow.com/questions/16603814/connect-to-microsoft-push-notification-service-for-windows-phone-8-from-ruby
+    system "curl --cert #{@pem} -H \"Content-Type:text/xml\" -H \"X-WindowsPhone-Target:Toast\" -H \"X-NotificationClass:2\" -X POST -d \"#{body}\" #{url}"
+    return build_response($?.success?)
   end
 
   def self.build_response(response)
-    case response.code
-      when 200
-        {:response =>  'success', :headers => response.headers, :status_code => response.code}
+    case response
+      when true
+        {:response =>  'success'}
       else
-        {:response => response.body, :headers => response.headers, :status_code => response.code}
+        {:response => 'failure'}
     end
   end
 
