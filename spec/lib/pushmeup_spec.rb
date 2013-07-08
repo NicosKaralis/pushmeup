@@ -18,8 +18,8 @@ describe Pushmeup do
       describe "#==" do
 
         it "should properly equate objects without caring about object identity" do
-          a = APNS::Notification.new("123", {alert: "hi"})
-          b = APNS::Notification.new("123", {alert: "hi"})
+          a = APNS::Notification.new("123", {:alert => "hi"})
+          b = APNS::Notification.new("123", {:alert => "hi"})
           a.should eq(b)
         end
 
@@ -52,7 +52,7 @@ describe Pushmeup do
       end
 
       it "should allow only notifications with data as hash with :data root" do
-        n = GCM::Notification.new("id", {:data => "data"})
+        n = GCM::Notification.new("id", { :data => "data" })
 
         n.data.is_a?(Hash).should be_true
         n.data.should == {:data => "data"}
@@ -69,8 +69,8 @@ describe Pushmeup do
       describe "#==" do
 
         it "should properly equate objects without caring about object identity" do
-          a = GCM::Notification.new("id", {:data => "data"})
-          b = GCM::Notification.new("id", {:data => "data"})
+          a = GCM::Notification.new("id", { :data => "data" })
+          b = GCM::Notification.new("id", { :data => "data" })
           a.should eq(b)
         end
 
