@@ -23,8 +23,18 @@ module APNS
     sock, ssl = self.open_connection
     
     notifications.each do |n|
-        ssl.write(n.packaged_notification)
+      # Write message to APNS
+      puts ssl.write(n.packaged_notification)
+       if IO.select([ssl], nil, nil, 5)
+        read_buffer = ssl.read(6)
+        puts "read_buffer:#{read_buffer}"
+        # close and reopen connection in case of error
+        ssl.close
+        sock.close
+        sock, ssl = self.open_connection
+        puts "Reopen connectio"
       end
+    end
 
     ssl.close
     sock.close
