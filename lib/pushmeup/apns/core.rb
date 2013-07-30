@@ -25,7 +25,7 @@ module APNS
     notifications.each do |n|
       # Write message to APNS
       puts ssl.write(n.packaged_notification)
-       if IO.select([ssl], nil, nil, 5)
+       if IO.select([ssl], nil, nil, 2)
         read_buffer = ssl.read(6)
         puts "read_buffer:#{read_buffer}"
         # close and reopen connection in case of error
