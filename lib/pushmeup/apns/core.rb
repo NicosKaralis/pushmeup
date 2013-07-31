@@ -21,18 +21,19 @@ module APNS
   
   def self.send_notifications(notifications)
     sock, ssl = self.open_connection
-    
+    pushmeLog = ActiveSupport::BufferedLogger.new(Rails.root.join('log/status.log'))
     notifications.each do |n|
       # Write message to APNS
       puts ssl.write(n.packaged_notification)
-       if IO.select([ssl], nil, nil, 5)
+       pushmeLog.info "Send #{n.device_token}"
+       if IO.select([ssl], nil, nil, 1)
         read_buffer = ssl.read(6)
-        puts "read_buffer:#{read_buffer}"
+        # puts "read_buffer:#{read_buffer}"
         # close and reopen connection in case of error
         ssl.close
         sock.close
         sock, ssl = self.open_connection
-        puts "Reopen connectio"
+        # puts "Reopen connection"
       end
     end
 
