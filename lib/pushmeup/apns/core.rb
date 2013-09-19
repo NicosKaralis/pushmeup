@@ -46,16 +46,23 @@ module APNS
 
     return apns_feedback
   end
-  
+
   protected
 
+  def self.pem_data
+    raise "Your pem file is not set. (APNS.pem = /path/to/cert.pem or object that responds to read)" unless pem
+    if pem.respond_to? :read
+      self.pem.read
+    else
+      raise "The path to your pem file does not exist!" unless File.exist?(@pem)
+      File.read(self.pem)
+    end
+  end
+
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
     context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    context.cert = OpenSSL::X509::Certificate.new(self.pem_data)
+    context.key  = OpenSSL::PKey::RSA.new(self.pem_data, self.pass)
 
     sock         = TCPSocket.new(self.host, self.port)
     ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
@@ -65,12 +72,9 @@ module APNS
   end
   
   def self.feedback_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
     context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    context.cert = OpenSSL::X509::Certificate.new(self.pem_data)
+    context.key  = OpenSSL::PKey::RSA.new(self.pem_data, self.pass)
     
     fhost = self.host.gsub('gateway','feedback')
     puts fhost
