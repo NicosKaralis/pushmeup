@@ -17,11 +17,11 @@ Currently we have only support for ``iOS`` and ``Android`` but we are planning c
 ## Installation
 
     $ gem install pushmeup
-    
+
 or add to your ``Gemfile``
 
     gem 'pushmeup'
-    
+
 and install it with
 
     $ bundle install
@@ -40,13 +40,13 @@ and install it with
 
 3. After you have created your ``pem`` file. Set the host, port and certificate file location on the APNS class. You just need to set this once:
 
-        APNS.host = 'gateway.push.apple.com' 
+        APNS.host = 'gateway.push.apple.com'
         # gateway.sandbox.push.apple.com is default
-        
-        APNS.port = 2195 
+
+        APNS.port = 2195
         # this is also the default. Shouldn't ever have to set this, but just in case Apple goes crazy, you can.
 
-        APNS.pem  = '/path/to/pem/file'
+        APNS.pem_data  = "your cert-pem content string"
         # this is the file you just created
 
         APNS.pass = ''
@@ -69,9 +69,9 @@ and install it with
 
 #### Sending more information along
 
-        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
+        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default',
                                             :other => {:sent => 'with apns gem', :custom_param => "value"})
-                                            
+
 this will result in a payload like this:
 
         {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default"},"sent":"with apns gem", "custom_param":"value"}
@@ -81,13 +81,13 @@ this will result in a payload like this:
     - (void)applicationDidFinishLaunching:(UIApplication *)application {
         // Register with apple that this app will use push notification
         ...
-        
+
         [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeBadge)];
-        
+
         ...
-        
+
     }
-    
+
     - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
         // Show the device token obtained from apple to the log
         NSLog("deviceToken: %", deviceToken);
@@ -105,7 +105,7 @@ this will result in a payload like this:
 
 		GCM.key = "123abc456def"
 		# this is the apiKey obtained from here https://code.google.com/apis/console/
-		
+
 ### Usage
 
 #### Sending a single notification:
@@ -136,17 +136,17 @@ for more information on parameters check documentation: [GCM | Android Developer
 
 		data1 = {:key => "value", :key2 => ["array", "value"]}
 		# must be an hash with all values you want inside you notification
-		
+
 		options1 = {:collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false}
 		# options for the notification
-		
+
 		n1 = GCM::Notification.new(destination1, data1, options1)
 		n2 = GCM::Notification.new(destination2, data2)
 		n3 = GCM::Notification.new(destination3, data3, options2)
 
 		GCM.send_notifications( [n1, n2, n3] )
 		# In this case, every notification has his own parameters
-	
+
 for more information on parameters check documentation: [GCM | Android Developers](http://developer.android.com/guide/google/gcm/gcm.html#request)
 
 #### Getting your Android device token (regId)
@@ -155,7 +155,7 @@ Check this link [GCM: Getting Started](http://developer.android.com/guide/google
 
 ### (Optional) You can add multiple keys for GCM
 
-You can use multiple keys to send notifications, to do it just do this changes in the code 
+You can use multiple keys to send notifications, to do it just do this changes in the code
 
 #### Configure
 
