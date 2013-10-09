@@ -52,6 +52,10 @@ and install it with
         APNS.pass = ''
         # Just in case your pem need a password
 
+   Alternatively, If you don't have the certificate stored in a file, you can pass any object that responds to ``read``. 
+
+        APNS.pem = StringIO.new(pem_string)
+
 ### Usage
 
 #### Sending a single notification:
