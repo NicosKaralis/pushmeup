@@ -38,18 +38,20 @@ and install it with
 
         $ openssl pkcs12 -in cert.p12 -out cert.pem -nodes -clcerts
 
-3. After you have created your ``pem`` file. Set the host, port and certificate file location on the APNS class. You just need to set this once:
+3. After you have created your ``pem`` file. We create an APNS application object with our application config
 
-        APNS.host = 'gateway.push.apple.com' 
+		APNSApp = APNS::Application.new(host,pem,port,pass)
+
+        APNSApp.host = 'gateway.push.apple.com' 
         # gateway.sandbox.push.apple.com is default
         
-        APNS.port = 2195 
+        APNSApp.port = 2195 
         # this is also the default. Shouldn't ever have to set this, but just in case Apple goes crazy, you can.
 
-        APNS.pem  = '/path/to/pem/file'
+        APNSApp.pem  = '/path/to/pem/file'
         # this is the file you just created
 
-        APNS.pass = ''
+        APNSApp.pass = ''
         # Just in case your pem need a password
 
 ### Usage
@@ -57,19 +59,19 @@ and install it with
 #### Sending a single notification:
 
         device_token = '123abc456def'
-        APNS.send_notification(device_token, 'Hello iPhone!' )
-        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+        APNSApp.send_notification(device_token, 'Hello iPhone!' )
+        APNSApp.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
 
 #### Sending multiple notifications
 
         device_token = '123abc456def'
         n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
         n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
-        APNS.send_notifications([n1, n2])
+        APNSApp.send_notifications([n1, n2])
 
 #### Sending more information along
 
-        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
+        APNSApp.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
                                             :other => {:sent => 'with apns gem', :custom_param => "value"})
                                             
 this will result in a payload like this:
@@ -96,14 +98,17 @@ this will result in a payload like this:
 ## GCM (Google Cloud Messaging)
 
 ### Configure
+Like APNS, we've to create a GCM application object with our config.
 
-		GCM.host = 'https://android.googleapis.com/gcm/send'
+		GCMApp = GCM::Application.new(host,format,key)
+
+		GCMApp.host = 'https://android.googleapis.com/gcm/send'
 		# https://android.googleapis.com/gcm/send is default
 
-		GCM.format = :json
+		GCMApp.format = :json
 		# :json is default and only available at the moment
 
-		GCM.key = "123abc456def"
+		GCMApp.key = "123abc456def"
 		# this is the apiKey obtained from here https://code.google.com/apis/console/
 		
 ### Usage
@@ -116,13 +121,13 @@ this will result in a payload like this:
 		data = {:key => "value", :key2 => ["array", "value"]}
 		# must be an hash with all values you want inside you notification
 
-		GCM.send_notification( destination )
+		GCMApp.send_notification( destination )
 		# Empty notification
 
-		GCM.send_notification( destination, data )
+		GCMApp.send_notification( destination, data )
 		# Notification with custom information
 
-		GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false )
+		GCMApp.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false )
 		# Notification with custom information and parameters
 
 for more information on parameters check documentation: [GCM | Android Developers](http://developer.android.com/guide/google/gcm/gcm.html#request)
@@ -144,7 +149,7 @@ for more information on parameters check documentation: [GCM | Android Developer
 		n2 = GCM::Notification.new(destination2, data2)
 		n3 = GCM::Notification.new(destination3, data3, options2)
 
-		GCM.send_notifications( [n1, n2, n3] )
+		GCMApp.send_notifications( [n1, n2, n3] )
 		# In this case, every notification has his own parameters
 	
 for more information on parameters check documentation: [GCM | Android Developers](http://developer.android.com/guide/google/gcm/gcm.html#request)
@@ -159,20 +164,20 @@ You can use multiple keys to send notifications, to do it just do this changes i
 
 #### Configure
 
-		GCM.key = { :key1 => "123abc456def", :key2 => "456def123abc" }
+		GCMApp.key = { :key1 => "123abc456def", :key2 => "456def123abc" }
 		# the ``:key1`` and the ``:key2`` can be any object, they can be the projectID, the date, the version, doesn't matter.
 		# The only restrain is: they need to be valid keys for a hash.
 
 #### Usage
 
 		# For single notification
-		GCM.send_notification( destination, :identity => :key1 )
+		GCMApp.send_notification( destination, :identity => :key1 )
 		# Empty notification
 
-		GCM.send_notification( destination, data, :identity => :key1 )
+		GCMApp.send_notification( destination, data, :identity => :key1 )
 		# Notification with custom information
 
-		GCM.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
+		GCMApp.send_notification( destination, data, :collapse_key => "placar_score_global", :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
 		# Notification with custom information and parameters
 
 		# For multiple notifications
@@ -182,7 +187,7 @@ You can use multiple keys to send notifications, to do it just do this changes i
 		n2 = GCM::Notification.new(destination2, data2, :identity => :key1)
 		n3 = GCM::Notification.new(destination3, data3, options2)
 
-		GCM.send_notifications( [n1, n2, n3] )
+		GCMApp.send_notifications( [n1, n2, n3] )
 		# In this case, every notification has his own parameters, options and key
 
 ## Status
