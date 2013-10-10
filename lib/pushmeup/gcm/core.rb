@@ -10,8 +10,10 @@ module GCM
     @host = 'https://android.googleapis.com/gcm/send'
     @format = :json
     @key = nil
+    @app_id = nil
 
     #Accessors
+    attr_accessor :app_id
     attr_accessor :host, :format, :key
 
     # Init method
