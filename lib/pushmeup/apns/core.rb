@@ -5,23 +5,15 @@ require 'json'
 module APNS
   class Application
 
-    #Variables
-    @host = 'gateway.sandbox.push.apple.com'
-    @port = 2195
-    # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
-    @pem = nil # this should be the path of the pem file not the contentes
-    @pass = nil
-    @app_id = nil
-
     #Accessors
     attr_accessor :host, :pem, :port, :pass, :app_id
     
     # Init method
-    def initialize (host, pem, port, pass)
-      @host=host
-      @pem=pem
-      @port=port
-      @pass=pass
+    def initialize (host='gateway.sandbox.push.apple.com', pem=nil, port=2195, pass=nil)
+      @host = host unless host == nil
+      @pem = pem unless pem == nil
+      @port = port unless port == nil
+      @pass = pass unless pass == nil
     end
 
     #Send notification 
