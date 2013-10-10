@@ -14,6 +14,13 @@ module GCM
     #Accessors
     attr_accessor :host, :format, :key
 
+    # Init method
+    def initialize (host, format, key)
+      @host=host
+      @format=format
+      @key=key
+    end
+
     def key(identity = nil)
         if @key.is_a?(Hash)
           raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!} if identity.nil?
@@ -68,6 +75,7 @@ module GCM
       end
     end
 
+    # Sending as JSON
     def send_push_as_json(n)
       headers = {
         'Authorization' => "key=#{ key(n.identity) }",
@@ -83,6 +91,7 @@ module GCM
       return send_to_server(headers, body.to_json)
     end
 
+    # Sending as plaintext
     def send_push_as_plain_text(n)
       raise "Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html"
       headers = {
@@ -93,6 +102,7 @@ module GCM
       return send_to_server(headers, body)
     end
 
+    #Sending to server
     def send_to_server(headers, body)
       params = {:headers => headers, :body => body}
       response = post(@host, params)
