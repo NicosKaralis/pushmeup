@@ -53,7 +53,7 @@ module APNS
     raise "Your pem file is not set. (APNS.pem = /path/to/cert.pem or object that responds to read)" unless pem
     if pem.respond_to? :read
       data = pem.read
-      pem.rewind if pem.respond_to(:rewind)
+      pem.rewind if pem.respond_to?(:rewind)
     else
       raise "The path to your pem file does not exist!" unless File.exist?(pem)
       data = File.read(pem)
