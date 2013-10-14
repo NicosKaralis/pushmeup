@@ -107,7 +107,7 @@ module GCM
     #Sending to server
     def send_to_server(headers, body)
       params = {:headers => headers, :body => body}
-      response = self.post(@host, params)
+      response = HTTParty.post(@host, params)
       return build_response(response)
     end
 
