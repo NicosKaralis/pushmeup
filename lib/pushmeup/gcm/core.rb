@@ -1,6 +1,6 @@
-require 'httparty'
 # require 'cgi'
 require 'json'
+require 'httparty'
 
 module GCM
   class Application
@@ -107,7 +107,7 @@ module GCM
     #Sending to server
     def send_to_server(headers, body)
       params = {:headers => headers, :body => body}
-      response = post(@host, params)
+      response = self.post(@host, params)
       return build_response(response)
     end
 
