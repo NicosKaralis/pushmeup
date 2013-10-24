@@ -24,18 +24,20 @@ module APNS
     errors = []
     notifications.each do |n|
       ssl.write(n.packaged_notification)
-      error = ssl.gets
-      puts error
-      unless error.blank?
-        errors << error
-        ssl.close
-        ssl.open_connection
+      if IO.select([ssl], nil, nil, 0.2)
+        response = ssl.read(6)
+        unless response.nil?
+          command, error_code, identifier = response.unpack('ccN'); 
+          errors << {token: n.device_token, error: error_code}
+          ssl.close
+          sock.close
+          sock, ssl = self.open_connection
+        end
       end
     end
-  
+
     ssl.close
     sock.close
-    puts "errors are #{errors}"
     return errors
   end
   

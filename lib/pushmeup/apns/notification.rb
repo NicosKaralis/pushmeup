@@ -1,3 +1,4 @@
+require 'multi_json'
 module APNS
   class Notification
     attr_accessor :device_token, :alert, :badge, :sound, :other
@@ -19,11 +20,12 @@ module APNS
     def packaged_notification
       pt = self.packaged_token
       pm = self.packaged_message
-      [0, 0, 32, pt, 0, pm.bytesize, pm].pack("ccca*cca*")
+      pm_packed = [pm].pack('a*')
+      [1, 1234, (Time.now+1.year).to_i, 0, 32, pt, pm_packed.bytesize, pm].pack("cNNccH*na*")
     end
 
     def packaged_token
-      [device_token.gsub(/[\s|<|>]/,'')].pack('H*')
+      device_token.gsub(/[\s|<|>]/,'') #] #.pack('H*')
     end
 
     def packaged_message
@@ -32,7 +34,7 @@ module APNS
       aps['aps']['badge'] = self.badge if self.badge
       aps['aps']['sound'] = self.sound if self.sound
       aps.merge!(self.other) if self.other
-      aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack("H*").unpack("n*").pack("U*")}
+      aps.to_json #.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack("H*").unpack("n*").pack("U*")}
     end
 
     def ==(that)
