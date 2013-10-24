@@ -21,13 +21,24 @@ module APNS
   
   def self.send_notifications(notifications)
     sock, ssl = self.open_connection
-    
+    errors = []
     notifications.each do |n|
-        ssl.write(n.packaged_notification)
+        begin
+          ssl.write(n.packaged_notification)
+          error = ssl.gets
+          puts error
+          errors << error unless error.blank?
+        rescue Exception => e
+          puts "Connection closed"
+          puts e
+          self.open_connection
+        end
       end
 
     ssl.close
     sock.close
+    puts "errors are #{errors}"
+    return errors
   end
   
   def self.feedback
