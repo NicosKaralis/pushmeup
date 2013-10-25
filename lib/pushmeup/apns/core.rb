@@ -24,7 +24,7 @@ module APNS
     notifications.each_with_index do |n, index|
       ssl.write(n.packaged_notification(index))
     end
-    process_error_response(ssl, notifications, errors)
+    errors = process_error_response(ssl, notifications, errors)
     ssl.close
     sock.close
     return errors
@@ -41,6 +41,7 @@ module APNS
         self.send_notifications(notifications[identifier+1..-1], errors)
       end
     end
+    return errors
   end
 
   def self.feedback
