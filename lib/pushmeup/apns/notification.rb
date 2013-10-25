@@ -17,11 +17,11 @@ module APNS
       end
     end
 
-    def packaged_notification
+    def packaged_notification(index)
       pt = self.packaged_token
       pm = self.packaged_message
       pm_packed = [pm].pack('a*')
-      [1, 1234, (Time.now+1.year).to_i, 0, 32, pt, pm_packed.bytesize, pm].pack("cNNccH*na*")
+      [1, index, (Time.now+1.year).to_i, 0, 32, pt, pm_packed.bytesize, pm].pack("cNNccH*na*")
     end
 
     def packaged_token

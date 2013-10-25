@@ -19,28 +19,30 @@ module APNS
     self.send_notifications([n])
   end
   
-  def self.send_notifications(notifications)
+  def self.send_notifications(notifications, errors=[])
     sock, ssl = self.open_connection
-    errors = []
-    notifications.each do |n|
-      ssl.write(n.packaged_notification)
-      if IO.select([ssl], nil, nil, 0.2)
-        response = ssl.read(6)
-        unless response.nil?
-          command, error_code, identifier = response.unpack('ccN'); 
-          errors << {token: n.device_token, error: error_code}
-          ssl.close
-          sock.close
-          sock, ssl = self.open_connection
-        end
-      end
+    notifications.each_with_index do |n, index|
+      ssl.write(n.packaged_notification(index))
     end
-
+    process_error_response(ssl, notifications, errors)
     ssl.close
     sock.close
     return errors
   end
-  
+
+  def self.process_error_response(ssl, notifications, errors=[])
+    if IO.select([ssl], nil, nil, 5)
+      response = ssl.read(6)
+      unless response.nil?
+        command, error_code, identifier = response.unpack('ccN'); 
+        if identifier > 0 && identifier < notifications.length
+          errors << {token: notifications[identifier].device_token, error: error_code}
+        end
+        self.send_notifications(notifications[identifier+1..-1], errors)
+      end
+    end
+  end
+
   def self.feedback
     sock, ssl = self.feedback_connection
 
