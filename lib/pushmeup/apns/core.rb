@@ -9,9 +9,10 @@ module APNS
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
+  @errors = []
   
   class << self
-    attr_accessor :host, :pem, :port, :pass
+    attr_accessor :host, :pem, :port, :pass, :errors
   end
   
   def self.send_notification(device_token, message)
@@ -19,17 +20,29 @@ module APNS
     self.send_notifications([n])
   end
   
-  def self.send_notifications(notifications)
+  def self.send_notifications(notifications, errors=[])
     sock, ssl = self.open_connection
-    
-    notifications.each do |n|
-        ssl.write(n.packaged_notification)
-      end
-
+    notifications.each_with_index do |n, index|
+      ssl.write(n.packaged_notification(index))
+    end
+    process_error_response(ssl, notifications, errors)
     ssl.close
     sock.close
   end
-  
+
+  def self.process_error_response(ssl, notifications, errors=[])
+    if IO.select([ssl], nil, nil, 5)
+      response = ssl.read(6)
+      unless response.nil?
+        command, error_code, identifier = response.unpack('ccN'); 
+        if identifier > 0 && identifier < notifications.length
+          errors << {token: notifications[identifier].device_token, error: error_code}
+        end
+        self.send_notifications(notifications[identifier+1..-1], errors)
+      end
+    end
+  end
+
   def self.feedback
     sock, ssl = self.feedback_connection
 
