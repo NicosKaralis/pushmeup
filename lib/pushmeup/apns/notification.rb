@@ -12,7 +12,7 @@ module APNS
       elsif message.is_a?(String)
         self.alert = message
       else
-        raise "Notification needs to have either a hash or string"
+        raise "Notification needs to have either a Hash or String"
       end
     end
 
