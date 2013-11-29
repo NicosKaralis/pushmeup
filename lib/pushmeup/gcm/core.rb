@@ -1,9 +1,15 @@
 require 'httparty'
 # require 'cgi'
+require 'uri'
 require 'json'
 
 module GCM
   include HTTParty
+
+  if (proxy_string = ENV['http_proxy'] || ENV['HTTP_PROXY'])
+    proxy = URI.parse(proxy_string)
+    http_proxy proxy.host, proxy.port, proxy.user, proxy.password
+  end
 
   @host = 'https://android.googleapis.com/gcm/send'
   @format = :json
