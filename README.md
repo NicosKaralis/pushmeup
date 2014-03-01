@@ -202,3 +202,7 @@ Currently we need a lot of testing so if you are good at writing tests please he
 Pushmeup is released under the MIT license:
 
 http://www.opensource.org/licenses/MIT
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/NicosKaralis/pushmeup/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
