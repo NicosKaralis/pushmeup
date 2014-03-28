@@ -49,7 +49,8 @@ module APNS
     end
   end
 
-  def self.feedback
+  def self.feedback(alternate_pem=nil)
+    set_pem_contents(alternate_pem)
     sock, ssl = self.feedback_connection
 
     apns_feedback = []
