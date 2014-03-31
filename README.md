@@ -46,10 +46,10 @@ and install it with
         
         APNS.port = 2195 
         # this is also the default. Shouldn't ever have to set this, but just in case Apple goes crazy, you can.
-
+        
         APNS.pem  = '/path/to/pem/file'
         # this is the file you just created
-
+        
         APNS.pass = ''
         # Just in case your pem need a password
 
@@ -57,25 +57,49 @@ and install it with
 
 #### Sending a single notification:
 
-        device_token = '123abc456def'
-        APNS.send_notification(device_token, 'Hello iPhone!' )
-        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    device_token = '123abc456def'
+    APNS.send_notification(device_token, 'Hello iPhone!' )
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
 
 #### Sending multiple notifications
 
-        device_token = '123abc456def'
-        n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-        n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
-        APNS.send_notifications([n1, n2])
+    device_token = '123abc456def'
+    n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
+    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS.send_notifications([n1, n2])
+        
+> All notifications passed as a parameter will be sent on a single connection, this is done to improve
+> reliability with APNS servers.
+
+#### Another way to send multiple notifications is to send notifications in a persistent connection (thread safe)
+
+    # Define that you want persistent connection
+    APNS.start_persistence
+
+    device_token = '123abc456def'
+    
+    # Send single notifications
+    APNS.send_notification(device_token, 'Hello iPhone!' )
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    
+    # Send multiple notifications
+    n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
+    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS.send_notifications([n1, n2])
+    
+    ...
+    
+    # Stop persistence, from this point each new push will open and close connections
+    APNS.stop_persistence
 
 #### Sending more information along
 
-        APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
-                                            :other => {:sent => 'with apns gem', :custom_param => "value"})
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
+                                        :other => {:sent => 'with apns gem', :custom_param => "value"})
                                             
 this will result in a payload like this:
 
-        {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default"},"sent":"with apns gem", "custom_param":"value"}
+    {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default"},"sent":"with apns gem", "custom_param":"value"}
 
 ### Getting your iOS device token
 
