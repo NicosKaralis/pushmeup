@@ -10,8 +10,27 @@ module APNS
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
   
+  @persistent = false
+  @mutex = nil
+  
+  @sock = nil
+  @ssl = nil
+  
   class << self
     attr_accessor :host, :pem, :port, :pass
+  end
+  
+  def self.start_persistence
+    @persistent = true
+    @mutex = Mutex.new
+  end
+  
+  def self.stop_persistence
+    @persistent = false
+    @mutex = Mutex.new
+    
+    @ssl.close
+    @sock.close
   end
   
   def self.send_notification(device_token, message)
@@ -20,14 +39,28 @@ module APNS
   end
   
   def self.send_notifications(notifications)
-    sock, ssl = self.open_connection
+    # If no @ssl is created or if @ssl is closed we need to start it
+    if @ssl.nil? || @ssl.closed?
+      @sock, @ssl = self.open_connection
+    end
     
-    notifications.each do |n|
-        ssl.write(n.packaged_notification)
+    if @persistent
+      @mutex.synchronize do
+        notifications.each do |n|
+          @ssl.write(n.packaged_notification)
+        end
       end
-
-    ssl.close
-    sock.close
+    else
+      notifications.each do |n|
+        @ssl.write(n.packaged_notification)
+      end      
+    end
+    
+    # Only close if not persistent
+    unless @persistent
+      @ssl.close
+      @sock.close
+    end
   end
   
   def self.feedback
