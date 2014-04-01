@@ -40,7 +40,7 @@ module APNS
   
   def self.send_notifications(notifications)
     # If no @ssl is created or if @ssl is closed we need to start it
-    if @ssl.nil? || @ssl.closed?
+    if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
       @sock, @ssl = self.open_connection
     end
     
