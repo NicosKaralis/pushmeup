@@ -67,7 +67,7 @@ module APNS
 protected
   
   def self.with_connection
-    attempt = 1
+    attempts = 1
   
     begin      
       # If no @ssl is created or if @ssl is closed we need to start it
