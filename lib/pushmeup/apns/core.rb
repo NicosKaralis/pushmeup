@@ -11,7 +11,8 @@ module APNS
   @pass = nil
   
   @persistent = false
-  @mutex = nil
+  @mutex = Mutex.new
+  @retries = 3 # TODO: check if we really need this
   
   @sock = nil
   @ssl = nil
@@ -22,12 +23,10 @@ module APNS
   
   def self.start_persistence
     @persistent = true
-    @mutex = Mutex.new
   end
   
   def self.stop_persistence
     @persistent = false
-    @mutex = Mutex.new
     
     @ssl.close
     @sock.close
@@ -39,27 +38,12 @@ module APNS
   end
   
   def self.send_notifications(notifications)
-    # If no @ssl is created or if @ssl is closed we need to start it
-    if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
-      @sock, @ssl = self.open_connection
-    end
-    
-    if @persistent
-      @mutex.synchronize do
+    @mutex.synchronize do
+      self.with_connection do
         notifications.each do |n|
           @ssl.write(n.packaged_notification)
         end
       end
-    else
-      notifications.each do |n|
-        @ssl.write(n.packaged_notification)
-      end      
-    end
-    
-    # Only close if not persistent
-    unless @persistent
-      @ssl.close
-      @sock.close
     end
   end
   
@@ -80,8 +64,38 @@ module APNS
     return apns_feedback
   end
   
-  protected
-
+protected
+  
+  def self.with_connection
+    attempt = 1
+  
+    begin      
+      # If no @ssl is created or if @ssl is closed we need to start it
+      if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
+        @sock, @ssl = self.open_connection
+      end
+    
+      yield
+    
+    rescue StandardError, Errno::EPIPE
+      raise unless attempts < @retries
+    
+      @ssl.close
+      @sock.close
+    
+      attempts += 1
+      retry
+    end
+  
+    # Only force close if not persistent
+    unless @persistent
+      @ssl.close
+      @ssl = nil
+      @sock.close
+      @sock = nil
+    end
+  end
+  
   def self.open_connection
     raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
     raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
