@@ -12,7 +12,7 @@ Pushmeup is an attempt to create an push notifications center that could send pu
 - Windows Phone
 - And many others
 
-Currently we have only support for ``iOS`` and ``Android`` but we are planning code for more plataforms.
+Currently we have only support for ``iOS``, ``Android`` and ``Windows Phone`` but we are planning code for more plataforms.
 
 ## Installation
 
@@ -209,6 +209,73 @@ You can use multiple keys to send notifications, to do it just do this changes i
 
 		GCM.send_notifications( [n1, n2, n3] )
 		# In this case, every notification has his own parameters, options and key
+
+## MPNS (Microsoft Push Notification Service)
+
+#### Sending a single notification:
+  
+    destination = ["device_url_1", "device_url_2", "device_url_3"]
+    # can be an string or an array of strings containing the device push url's of the devices you want to push to
+
+    title = 'My title'
+    # Notification title
+
+    message = 'My message'
+    # Notification message (optional)
+
+    data = {:key => "value", :key2 => ["array", "value"]}
+    # must be an hash with all values you want inside your custom notification data (optional)
+
+    MPNS.send_notification( destination, title )
+    # Notification with only title
+
+    MPNS.send_notification( destination, title, message )
+    # Notification with title and message
+
+    MPNS.send_notification( destination, title, message, data )
+    # Notification with title, message and custom data
+
+    MPNS.send_notification( destination, title, message, data, options = { notification_class: 12 } )
+    # Notification with title, message, custom data and custom options
+
+for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945)
+
+#### Sending multiple notifications:
+
+    destination1 = "device_url_1"
+    destination2 = ["device_url_2"]
+    destination3 = ["device_url_1", "device_url_2", "device_url_3"]
+    # can be an string or an array of strings containing the regIds of the devices you want to send
+
+    title = 'My title'
+    # Notification title
+
+    message = 'My message'
+    # Notification message
+
+    data1 = {:key => "value", :key2 => ["array", "value"]}
+    # must be an hash with all values you want inside you notification
+    
+    options = { notification_class: 12 }
+    # options for the notification
+    
+    n1 = MPNS::Notification.new(destination1, title, message, data1, options)
+    n2 = MPNS::Notification.new(destination2, title, message, data2, options)
+    n3 = MPNS::Notification.new(destination3, title, message, data3, options)
+
+    MPNS.send_notifications( [n1, n2, n3] )
+    # In this case, every notification has his own parameters
+  
+for more information on parameters check documentation: [Windows Phone Dev Center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202945)
+
+#### Getting your Microsoft Push Notification device url (device_url)
+
+Check this link [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202940)
+and this for a detailed example [Windows Phone dev center](http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh202967)
+
+#### Known limitations
+
+- Currently only supports 'Toast' notifications. No support for 'Raw' or 'Tile' notifications (yet).
 
 ## Status
 
