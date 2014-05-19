@@ -27,6 +27,37 @@ describe Pushmeup do
 
     end
 
+    describe '.send_notification' do
+      let(:token) { 'token' }
+      let(:message) { 'message' }
+
+      context 'with pem setting' do
+        context 'when the pem does not exist' do
+          before do
+            APNS.pem = '/bad/path'
+          end
+
+          it 'fails' do
+            expect do
+              APNS.send_notification(token, message)
+            end.to raise_error(APNS::ConfigurationError, /does not exist/)
+          end
+        end
+      end
+
+      context 'without pem or pem_data' do
+        before do
+          APNS.pem = nil
+        end
+
+        it 'fails' do
+          expect do
+            APNS.send_notification(token, message)
+          end.to raise_error(APNS::ConfigurationError, /Supply the path to your pem file, or the binary pem data/)
+        end
+      end
+    end
+
   end
 
   describe "GCM" do
