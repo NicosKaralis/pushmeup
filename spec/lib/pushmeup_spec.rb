@@ -30,12 +30,50 @@ describe Pushmeup do
     describe '.send_notification' do
       let(:token) { 'token' }
       let(:message) { 'message' }
+      let(:pem_data) { 'pem_data' }
+      let(:cert) { double }
+      let(:key) { double }
+      let(:sock) { double(close: nil) }
+      let(:ssl) { double(connect: nil, write: nil, close: nil) }
+      let(:packaged) { 'packaged' }
+
+      after do
+        APNS.pem = nil
+        APNS.pem_data = nil
+      end
+
+      before do
+        allow(OpenSSL::X509::Certificate).to receive(:new).
+          with(pem_data).and_return(cert)
+        allow(OpenSSL::PKey::RSA).to receive(:new).
+          with(pem_data, anything).and_return(key)
+        allow(TCPSocket).to receive(:new).and_return(sock)
+        allow(OpenSSL::SSL::SSLSocket).to receive(:new).and_return(ssl)
+      end
+
+      shared_examples 'notifications' do
+        it 'notifications are sent' do
+          expect(ssl).to have_received(:write).with(/"#{message}"/)
+        end
+      end
 
       context 'with pem setting' do
-        context 'when the pem does not exist' do
+        context 'with an existing pem file' do
+          let(:path) { '/good/path' }
+
           before do
-            APNS.pem = '/bad/path'
+            allow(File).to receive(:exist?).with(path).and_return(true)
+            allow(File).to receive(:read).with(path).and_return(pem_data)
           end
+
+          before { APNS.pem = '/good/path' }
+          before { APNS.send_notification(token, message) }
+
+          include_examples 'notifications'
+        end
+
+        context 'when the pem does not exist' do
+          before { APNS.pem = '/bad/path' }
 
           it 'fails' do
             expect do
@@ -45,10 +83,15 @@ describe Pushmeup do
         end
       end
 
+      context 'with pem_data' do
+        before { APNS.pem_data = pem_data }
+        before { APNS.send_notification(token, message) }
+
+        include_examples 'notifications'
+      end
+
       context 'without pem or pem_data' do
-        before do
-          APNS.pem = nil
-        end
+        before { APNS.pem = nil }
 
         it 'fails' do
           expect do

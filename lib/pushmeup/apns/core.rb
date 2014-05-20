@@ -22,7 +22,7 @@ module APNS
   @ssl = nil
   
   class << self
-    attr_accessor :host, :pem, :port, :pass
+    attr_accessor :host, :pem, :port, :pass, :pem_data
   end
   
   def self.start_persistence
