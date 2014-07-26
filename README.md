@@ -12,7 +12,7 @@ Pushmeup is an attempt to create an push notifications center that could send pu
 - Windows Phone
 - And many others
 
-Currently we have only support for ``iOS`` and ``Android`` but we are planning code for more plataforms.
+Currently we have only support for ``iOS``, ``Android`` and ``Kindle Fire`` but we are planning code for more plataforms.
 
 ## Installation
 
@@ -209,6 +209,64 @@ You can use multiple keys to send notifications, to do it just do this changes i
 
 		GCM.send_notifications( [n1, n2, n3] )
 		# In this case, every notification has his own parameters, options and key
+
+## FIRE (Amazon Messaging)
+
+### Configure
+
+		FIRE.client_id = "amzn1.application-oa2-client.12345678sdfgsdfg"
+		# this is the Client ID obtained from your Security Profile Management on amazon developers
+		
+		FIRE.client_secret = "fkgjsbegksklwr863485245ojowe345"
+        # this is the Client Secret obtained from your Security Profile Management on amazon developers
+		
+### Usage
+
+#### Sending a single notification:
+
+		destination = "tydgfhewgnwe37586329586ejthe93053th346hrth3t"
+		# can be an string or an array of strings containing the regId of the device you want to send
+
+		data = {:key => "value", :key2 => "some value2"}
+		# must be an hash with all values you want inside you notification, strings only, no arrays
+
+		FIRE.send_notification( destination )
+		# Empty notification
+
+		FIRE.send_notification( destination, data )
+		# Notification with custom information
+
+		FIRE.send_notification( destination, data, :consolidationKey => "placar_score_global", :expiresAfter => 3600)
+		# Notification with custom information and parameters
+
+for more information on parameters check documentation: [Amazon Messaging | Developers](https://developer.amazon.com/public/apis/engage/device-messaging/tech-docs/06-sending-a-message#Request Format)
+
+#### Sending multiple notifications:
+
+		destination1 = "device1"
+		destination2 = ["device2"]
+		destination3 = ["device1", "device2", "device3"]
+		# can be an string or an array of strings containing the regIds of the devices you want to send
+
+		data1 = {:key => "value", :key2 => ["array", "value"]}
+		# must be an hash with all values you want inside you notification
+		
+		options1 = {:consolidationKey => "placar_score_global", :expiresAfter => 3600}
+		# options for the notification
+		
+		n1 = FIRE::Notification.new(destination1, data1, options1)
+		n2 = FIRE::Notification.new(destination2, data2)
+		n3 = FIRE::Notification.new(destination3, data3, options2)
+
+		FIRE.send_notifications( [n1, n2, n3] )
+		# In this case, every notification has his own parameters
+	
+for more information on parameters check documentation: [Amazon Messaging | Developers](https://developer.amazon.com/public/apis/engage/device-messaging/tech-docs/06-sending-a-message#Request Format)
+
+#### Getting your Kindle Fire device token (regId)
+
+Check this link [Amazon Messaging: Getting Started](https://developer.amazon.com/public/apis/engage/device-messaging)
+
 
 ## Status
 
