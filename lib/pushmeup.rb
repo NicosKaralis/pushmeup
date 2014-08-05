@@ -1,3 +1,3 @@
-require "pushmeup/version"
 require "pushmeup/apple"
 require "pushmeup/android"
+require "pushmeup/version"
