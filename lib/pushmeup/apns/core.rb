@@ -12,8 +12,7 @@ module APNS
     @sock = nil
     @ssl = nil
 
-    # Persistance attributes
-    @mutex = Mutex.new
+    # Retries
     @retries = 3
 
     # Init method
@@ -32,11 +31,9 @@ module APNS
     
     # Send notifications
     def send_notifications(notifications)
-      @mutex.synchronize do
-        self.with_connection do
-          notifications.each do |n|
-            @ssl.write(n.packaged_notification)
-          end
+      self.with_connection do
+        notifications.each do |n|
+          @ssl.write(n.packaged_notification)
         end
       end
     end
