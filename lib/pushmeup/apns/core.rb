@@ -13,16 +13,15 @@ module APNS
     @ssl = nil
 
     # Persistance attributes
-    @persistent = false
     @mutex = Mutex.new
+    @retries = 3
 
     # Init method
-    def initialize (host='gateway.sandbox.push.apple.com', pem=nil, port=2195, pass=nil, persistent = false)
+    def initialize (host='gateway.sandbox.push.apple.com', pem=nil, port=2195, pass=nil)
       @host = host unless host == nil
       @pem = pem unless pem == nil
       @port = port unless port == nil
       @pass = pass unless pass == nil
-      @persistent = persistent
     end
 
     # Send notification 
@@ -75,19 +74,17 @@ module APNS
 
       rescue StandardError, Errno::EPIPE
         raise unless attempts < @retries
-        @ssl.close
-        @sock.close
+        @ssl.close unless @ssl.nil?
+        @sock.close unless @sock.nil?
         attempts += 1
         retry
       end
   
-      # Only force close if not persistent
-      unless @persistent
-        @ssl.close
-        @ssl = nil
-        @sock.close
-        @sock = nil
-      end
+      # Closing socket connection
+      @ssl.close
+      @ssl = nil
+      @sock.close
+      @sock = nil
     end
 
     def open_connection
