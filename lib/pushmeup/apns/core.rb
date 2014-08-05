@@ -69,9 +69,9 @@ module APNS
         # If no @ssl is created or if @ssl is closed we need to start it
         if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
           @sock, @ssl = self.open_connection
-      end
+        end
     
-      yield
+        yield
 
       rescue StandardError, Errno::EPIPE
         raise unless attempts < @retries

@@ -40,7 +40,7 @@ and install it with
 
 3. After you have created your ``pem`` file. We create an APNS application object with our application config
 
-		APNSApp = APNS::Application.new(host,pem,port,pass)
+		APNSApp = APNS::Application.new(host,pem,port,pass, persistent)
 
         APNSApp.host = 'gateway.push.apple.com' 
         # gateway.sandbox.push.apple.com is default
