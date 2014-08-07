@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name            = 'pushmeup'
   s.version         = Pushmeup::VERSION
   s.authors         = ["Nicos Karalis", "Pedro Piñera"]
-  s.emails           = ["nicoskaralis@me.com", "pepibumur@gmail.com"]
+  s.email           = ["pepibumur@gmail.com"]
   
   s.homepage        = "https://github.com/teambox/pushmeup"
   s.summary         = %q{Send push notifications to Apple devices through ANPS and Android devices through GCM}
