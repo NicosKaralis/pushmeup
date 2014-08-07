@@ -5,10 +5,10 @@ require "pushmeup/version"
 Gem::Specification.new do |s|
   s.name            = 'pushmeup'
   s.version         = Pushmeup::VERSION
-  s.authors         = ["Nicos Karalis"]
-  s.email           = ["nicoskaralis@me.com"]
+  s.authors         = ["Nicos Karalis", "Pedro Piñera"]
+  s.emails           = ["nicoskaralis@me.com", "pepibumur@gmail.com"]
   
-  s.homepage        = "https://github.com/NicosKaralis/pushmeup"
+  s.homepage        = "https://github.com/teambox/pushmeup"
   s.summary         = %q{Send push notifications to Apple devices through ANPS and Android devices through GCM}
   s.description     = <<-DESC
                         This gem is a wrapper to send push notifications to devices.
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'httparty'
   s.add_dependency 'json'
-  s.add_development_dependency 'rake', '~> 0'
-  s.add_development_dependency 'rspec', '~> 0'
+
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'rspec'
 end
