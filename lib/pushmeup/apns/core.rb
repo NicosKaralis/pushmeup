@@ -7,13 +7,6 @@ module APNS
 
     #Accessors
     attr_accessor :host, :pem, :port, :pass, :app_id
-    
-    # Socket attributes
-    @sock = nil
-    @ssl = nil
-
-    # Retries
-    @retries = 3
 
     # Init method
     def initialize (host='gateway.sandbox.push.apple.com', pem=nil, port=2195, pass=nil)
@@ -21,6 +14,7 @@ module APNS
       @pem = pem unless pem == nil
       @port = port unless port == nil
       @pass = pass unless pass == nil
+      @retries = 3
     end
 
     # Send notification 
@@ -55,34 +49,35 @@ module APNS
       return apns_feedback
     end
     
-    protected
-
     # Connection initialization and notifications sending
-    def self.with_connection
+    def with_connection
       attempts = 1
-      
       begin      
-        # If no @ssl is created or if @ssl is closed we need to start it
-        if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
-          @sock, @ssl = self.open_connection
-        end
-    
+        open_socket_and_ssl
         yield
-
       rescue StandardError, Errno::EPIPE
-        raise unless attempts < @retries
-        @ssl.close unless @ssl.nil?
-        @sock.close unless @sock.nil?
+        return unless attempts < @retries
         attempts += 1
         retry
+      ensure
+        close_socket_and_ssl
       end
-  
-      # Closing socket connection
-      @ssl.close
-      @ssl = nil
-      @sock.close
-      @sock = nil
     end
+
+    # Open socket and ssl only if they are not already opened
+    def open_socket_and_ssl
+      if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
+        @sock, @ssl = self.open_connection
+      end
+    end
+
+    # Close socked and ssl only if they are not nil
+    def close_socket_and_ssl
+      @ssl.close unless @ssl.nil?
+      @sock.close unless @sock.nil?
+    end
+
+    protected
 
     def open_connection
       raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem

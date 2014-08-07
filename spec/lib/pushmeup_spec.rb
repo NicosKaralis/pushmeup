@@ -17,7 +17,34 @@ describe Pushmeup do
       @APNS.pem.should be_equal(nil)
       @APNS.pass.should be_equal(nil)
     end
-    
+
+    it "should open the connection when sending notifications" do
+      @APNS.stub(:open_connection)
+      @APNS.should_receive(:open_connection)
+      @APNS.with_connection { }
+    end
+
+    it "should close the connection after every notifications sending" do
+      ssl = double("ssl")
+      socket = double("socket")
+      @APNS.stub(:open_connection)
+      @APNS.stub(:ssl) { ssl }
+      @APNS.stub(:socket) {socket}
+      @APNS.should_receive(:close_socket_and_ssl)
+      @APNS.with_connection { }
+    end
+
+    it "should close the connection if notifications sending fails" do
+      ssl = double("ssl")
+      socket = double("socket")
+      @APNS.stub(:open_connection)
+      @APNS.stub(:ssl) { ssl }
+      @APNS.stub(:socket) {socket}
+      @APNS.should_receive(:close_socket_and_ssl)
+      @APNS.with_connection { 
+        raise Errno::EPIPE
+      }
+    end
   end
   
   describe "GCM" do
