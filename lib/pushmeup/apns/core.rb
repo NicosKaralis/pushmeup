@@ -53,19 +53,18 @@ module APNS
     def with_connection
       attempts = 1
       begin      
-        open_socket_and_ssl
+        open_socket_and_ssl_if_needed
         yield
       rescue StandardError, Errno::EPIPE
+        close_socket_and_ssl
         return unless attempts < @retries
         attempts += 1
         retry
-      ensure
-        close_socket_and_ssl
       end
     end
 
     # Open socket and ssl only if they are not already opened
-    def open_socket_and_ssl
+    def open_socket_and_ssl_if_needed
       if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
         @sock, @ssl = self.open_connection
       end
