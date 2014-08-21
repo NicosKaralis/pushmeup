@@ -7,31 +7,29 @@ module APNS
 
     #Accessors
     attr_accessor :host, :pem, :port, :pass, :app_id
-    
+
     # Init method
     def initialize (host='gateway.sandbox.push.apple.com', pem=nil, port=2195, pass=nil)
       @host = host unless host == nil
       @pem = pem unless pem == nil
       @port = port unless port == nil
       @pass = pass unless pass == nil
+      @retries = 3
     end
 
-    #Send notification 
+    # Send notification 
     def send_notification(device_token, message)
       n = APNS::Notification.new(device_token, message)
       self.send_notifications([n])
     end
     
-    #Send notifications
+    # Send notifications
     def send_notifications(notifications)
-      sock, ssl = self.open_connection
-      
-      notifications.each do |n|
-          ssl.write(n.packaged_notification)
+      self.with_connection do
+        notifications.each do |n|
+          @ssl.write(n.packaged_notification)
         end
-
-      ssl.close
-      sock.close
+      end
     end
     
     def feedback
@@ -51,6 +49,33 @@ module APNS
       return apns_feedback
     end
     
+    # Connection initialization and notifications sending
+    def with_connection
+      attempts = 1
+      begin      
+        open_socket_and_ssl_if_needed
+        yield
+      rescue StandardError, Errno::EPIPE
+        close_socket_and_ssl
+        return unless attempts < @retries
+        attempts += 1
+        retry
+      end
+    end
+
+    # Open socket and ssl only if they are not already opened
+    def open_socket_and_ssl_if_needed
+      if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
+        @sock, @ssl = self.open_connection
+      end
+    end
+
+    # Close socked and ssl only if they are not nil
+    def close_socket_and_ssl
+      @ssl.close unless @ssl.nil?
+      @sock.close unless @sock.nil?
+    end
+
     protected
 
     def open_connection
@@ -77,7 +102,6 @@ module APNS
       context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
       
       fhost = self.host.gsub('gateway','feedback')
-      puts fhost
       
       sock         = TCPSocket.new(fhost, 2196)
       ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)

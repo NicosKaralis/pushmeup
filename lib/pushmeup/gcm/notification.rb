@@ -18,7 +18,7 @@ module GCM
       elsif tokens.is_a?(String)
         @device_tokens = [tokens]
       else
-        raise "device_tokens needs to be either a hash or string"
+        raise "device_tokens needs to be either a Hash or String"
       end
     end
     
@@ -26,7 +26,7 @@ module GCM
       if data.is_a?(Hash)
         @data = data
       else
-        raise "data parameter must be the tpe of Hash"
+        raise "data parameter must be the type of Hash"
       end
     end
     
