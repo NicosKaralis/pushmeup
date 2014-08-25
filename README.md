@@ -59,13 +59,13 @@ and install it with
 
     device_token = '123abc456def'
     APNS.send_notification(device_token, 'Hello iPhone!' )
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :category => 'cat1')
 
 #### Sending multiple notifications
 
     device_token = '123abc456def'
     n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :category => 'cat1')
     APNS.send_notifications([n1, n2])
         
 > All notifications passed as a parameter will be sent on a single connection, this is done to improve
@@ -80,11 +80,11 @@ and install it with
     
     # Send single notifications
     APNS.send_notification(device_token, 'Hello iPhone!' )
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :category => 'cat1')
     
     # Send multiple notifications
     n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :category => 'cat1')
     APNS.send_notifications([n1, n2])
     
     ...
@@ -94,12 +94,12 @@ and install it with
 
 #### Sending more information along
 
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', 
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :category => 'cat1', 
                                         :other => {:sent => 'with apns gem', :custom_param => "value"})
                                             
 this will result in a payload like this:
 
-    {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default"},"sent":"with apns gem", "custom_param":"value"}
+    {"aps":{"alert":"Hello iPhone!","badge":1,"sound":"default", "category":"cat1"},"sent":"with apns gem", "custom_param":"value"}
 
 ### Getting your iOS device token
 
