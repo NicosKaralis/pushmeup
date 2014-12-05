@@ -4,11 +4,15 @@ require 'json'
 
 module APNS
 
+  class Error < Exception; end
+  class ConfigurationError < Error; end
+
   @host = 'gateway.sandbox.push.apple.com'
   @port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
+  @pem_data = nil
   
   @persistent = false
   @mutex = Mutex.new
@@ -18,7 +22,7 @@ module APNS
   @ssl = nil
   
   class << self
-    attr_accessor :host, :pem, :port, :pass
+    attr_accessor :host, :pem, :port, :pass, :pem_data
   end
   
   def self.start_persistence
@@ -97,28 +101,14 @@ protected
   end
   
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
-    context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-
     sock         = TCPSocket.new(self.host, self.port)
-    ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
+    ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
     ssl.connect
 
     return sock, ssl
   end
   
   def self.feedback_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
-    context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-    
     fhost = self.host.gsub('gateway','feedback')
     
     sock         = TCPSocket.new(fhost, 2196)
@@ -126,6 +116,31 @@ protected
     ssl.connect
 
     return sock, ssl
+  end
+
+  def self.context
+    context      = OpenSSL::SSL::SSLContext.new
+    context.cert = OpenSSL::X509::Certificate.new(pem_data)
+    context.key  = OpenSSL::PKey::RSA.new(pem_data, pass)
+    context
+  end
+
+  def self.pem_data
+    return @pem_data if @pem_data
+
+    if pem
+      raise ConfigurationError.new("The path to your pem file does not exist!") unless File.exist?(pem)
+      @pem_data = File.read(pem)
+    else
+      message =<<-EOT
+Supply the path to your pem file, or the binary pem data:
+E.g.:
+  APNS.pem = /path/to/cert.pem
+or
+  APNS.pem_data = binary_pem_data
+      EOT
+      raise ConfigurationError.new(message)
+    end
   end
   
 end
