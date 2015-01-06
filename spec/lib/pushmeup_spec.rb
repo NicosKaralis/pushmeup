@@ -49,6 +49,18 @@ describe Pushmeup do
         @options = {:data => "dummy data"}
       end
 
+      it "should have https://android.googleapis.com/gcm/send as host by default" do
+        GCM.host.eql?("https://android.googleapis.com/gcm/send").should be_truthy
+      end
+
+      it "should have json as format by default" do
+        GCM.format.eql?(:json).should be_truthy
+      end      
+
+      it "should have nil key by default" do
+        GCM.key.should be_equal(nil)
+      end      
+
       it "should allow only notifications with device_tokens as array" do
         n = GCM::Notification.new("id", @options)
         n.device_tokens.is_a?(Array).should be_truthy
