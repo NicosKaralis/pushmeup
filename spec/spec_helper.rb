@@ -1,2 +1,1 @@
 require 'pushmeup'
-require 'pry'
