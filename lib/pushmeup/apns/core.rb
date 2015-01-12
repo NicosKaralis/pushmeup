@@ -7,9 +7,9 @@ module APNS
   @host = 'gateway.sandbox.push.apple.com'
   @port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
-  @pem = nil # this should be the path of the pem file not the contentes
+  @pem          = nil # this should be the path of the pem file not the contentes
   @pem_contents = nil # this should be the contents of a specific pem
-  @pass = nil
+  @pass         = nil
 
   @persistent = false
   @mutex = Mutex.new
@@ -38,7 +38,7 @@ module APNS
     self.send_notifications([n], alternate_pem)
   end
 
-  def self.send_notifications(notifications)
+  def self.send_notifications(notifications, alternate_pem=nil)
     set_pem_contents(alternate_pem)
     @mutex.synchronize do
       self.with_connection do
