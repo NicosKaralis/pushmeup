@@ -80,11 +80,11 @@ and install it with
     
     # Send single notifications
     APNS.send_notification(device_token, 'Hello iPhone!' )
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :silent => 1)
     
     # Send multiple notifications
     n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :silent => 0)
     APNS.send_notifications([n1, n2])
     
     ...

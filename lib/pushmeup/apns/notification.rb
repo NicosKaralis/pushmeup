@@ -1,6 +1,6 @@
 module APNS
   class Notification
-    attr_accessor :device_token, :alert, :badge, :sound, :other
+    attr_accessor :device_token, :alert, :badge, :sound, :silent, :other
 
     def initialize(device_token, message)
       self.device_token = device_token
@@ -9,6 +9,7 @@ module APNS
         self.badge = message[:badge]
         self.sound = message[:sound]
         self.other = message[:other]
+        self.silent = message[:silent]
       elsif message.is_a?(String)
         self.alert = message
       else
@@ -31,6 +32,7 @@ module APNS
       aps['aps']['alert'] = self.alert if self.alert
       aps['aps']['badge'] = self.badge if self.badge
       aps['aps']['sound'] = self.sound if self.sound
+      aps['aps']['content-available'] = self.silent if self.silent
       aps.merge!(self.other) if self.other
       aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack("H*").unpack("n*").pack("U*")}
     end
@@ -40,6 +42,7 @@ module APNS
       alert == that.alert &&
       badge == that.badge &&
       sound == that.sound &&
+      silent == that.silent &&
       other == that.other
     end
 
