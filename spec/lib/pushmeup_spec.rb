@@ -3,14 +3,14 @@ require 'spec_helper'
 describe Pushmeup do
   describe "APNS" do
     it "should have a APNS object" do
-      defined?(APNS).should_not be_false
+      expect(defined?(APNS)).to be_truthy
     end
 
     it "should not forget the APNS default parameters" do
-      APNS.host.should == "gateway.sandbox.push.apple.com"
-      APNS.port.should == 2195
-      APNS.pem.should be_equal(nil)
-      APNS.pass.should be_equal(nil)
+      expect(APNS.host).to eq("gateway.sandbox.push.apple.com")
+      expect(APNS.port).to eq(2195)
+      expect(APNS.pem).to be_nil
+      expect(APNS.pass).to be_nil
     end
 
     describe "Notifications" do
@@ -20,7 +20,7 @@ describe Pushmeup do
         it "should properly equate objects without caring about object identity" do
           a = APNS::Notification.new("123", {:alert => "hi"})
           b = APNS::Notification.new("123", {:alert => "hi"})
-          a.should eq(b)
+          expect(a).to eq(b)
         end
 
       end
@@ -31,7 +31,7 @@ describe Pushmeup do
 
   describe "GCM" do
     it "should have a GCM object" do
-      defined?(GCM).should_not be_false
+      expect(defined?(GCM)).to be_truthy
     end
 
     describe "Notifications" do
@@ -42,28 +42,28 @@ describe Pushmeup do
 
       it "should allow only notifications with device_tokens as array" do
         n = GCM::Notification.new("id", @options)
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens).to be_an(Array)
 
         n.device_tokens = ["a" "b", "c"]
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens).to be_an(Array)
 
         n.device_tokens = "a"
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens).to be_an(Array)
       end
 
       it "should allow only notifications with data as hash with :data root" do
         n = GCM::Notification.new("id", { :data => "data" })
 
-        n.data.is_a?(Hash).should be_true
-        n.data.should == {:data => "data"}
+        expect(n.data).to be_a(Hash)
+        expect(n.data).to eq(:data => "data")
 
         n.data = {:a => ["a", "b", "c"]}
-        n.data.is_a?(Hash).should be_true
-        n.data.should == {:a => ["a", "b", "c"]}
+        expect(n.data).to be_a(Hash)
+        expect(n.data).to eq(:a => ["a", "b", "c"])
 
         n.data = {:a => "a"}
-        n.data.is_a?(Hash).should be_true
-        n.data.should == {:a => "a"}
+        expect(n.data).to be_a(Hash)
+        expect(n.data).to eq(:a => "a")
       end
 
       describe "#==" do
@@ -71,7 +71,7 @@ describe Pushmeup do
         it "should properly equate objects without caring about object identity" do
           a = GCM::Notification.new("id", { :data => "data" })
           b = GCM::Notification.new("id", { :data => "data" })
-          a.should eq(b)
+          expect(a).to eq(b)
         end
 
       end
