@@ -106,6 +106,8 @@ protected
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
     context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
 
+  end
+
   def self.set_pem_contents(alternate_pem)
     raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" if !self.pem && !alternate_pem
     raise "The path to your pem file does not exist!" unless File.exist?(self.pem) || alternate_pem
