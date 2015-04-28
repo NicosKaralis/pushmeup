@@ -14,7 +14,6 @@ describe Pushmeup do
     end
 
     describe "Notifications" do
-
       describe "#==" do
 
         it "should properly equate objects without caring about object identity" do
