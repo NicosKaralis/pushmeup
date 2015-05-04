@@ -1,9 +1,9 @@
 require 'socket'
 require 'openssl'
 require 'json'
+require 'logger'
 
 module APNS
-
   @host = 'gateway.sandbox.push.apple.com'
   @port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
@@ -18,7 +18,7 @@ module APNS
   @ssl = nil
   
   class << self
-    attr_accessor :host, :pem, :port, :pass
+    attr_accessor :host, :pem, :port, :pass, :logger
   end
   
   def self.start_persistence
@@ -38,6 +38,8 @@ module APNS
   end
   
   def self.send_notifications(notifications)
+   logger.info "Pushmeup: sending message(s): '#{notifications.map { |n| n.packaged_message}.join("|")}' to #{self.host}"
+    
     @mutex.synchronize do
       self.with_connection do
         notifications.each do |n|
@@ -62,6 +64,10 @@ module APNS
     sock.close
 
     return apns_feedback
+  end
+  
+  def self.logger
+    defined?(Rails) ? Rails.logger : Logger.new(STDOUT)
   end
   
 protected

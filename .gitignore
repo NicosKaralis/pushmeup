@@ -17,3 +17,5 @@ test/version_tmp
 tmp
 NEW_README.md
 .idea/
+.ruby-*
+Gemfile.lock

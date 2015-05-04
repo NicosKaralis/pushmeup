@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Pushmeup do
   describe "APNS" do
     it "should have a APNS object" do
-      defined?(APNS).should_not be_false
+      defined?(APNS).should_not be_nil
     end
 
     it "should not forget the APNS default parameters" do
@@ -14,7 +14,6 @@ describe Pushmeup do
     end
 
     describe "Notifications" do
-
       describe "#==" do
 
         it "should properly equate objects without caring about object identity" do
@@ -23,6 +22,11 @@ describe Pushmeup do
           a.should eq(b)
         end
 
+        it "should add content-available to data" do
+          a = APNS::Notification.new("123", {:alert => "hi", :"content-available" => 1})
+
+          a.packaged_message.should == '{"aps":{"alert":"hi","content-available":1}}'
+        end
       end
 
     end
@@ -31,7 +35,7 @@ describe Pushmeup do
 
   describe "GCM" do
     it "should have a GCM object" do
-      defined?(GCM).should_not be_false
+      defined?(GCM).should_not be_nil
     end
 
     describe "Notifications" do
@@ -42,27 +46,27 @@ describe Pushmeup do
 
       it "should allow only notifications with device_tokens as array" do
         n = GCM::Notification.new("id", @options)
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens.is_a?(Array)).to eq(true)
 
         n.device_tokens = ["a" "b", "c"]
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens.is_a?(Array)).to eq(true)
 
         n.device_tokens = "a"
-        n.device_tokens.is_a?(Array).should be_true
+        expect(n.device_tokens.is_a?(Array)).to eq(true)
       end
 
       it "should allow only notifications with data as hash with :data root" do
         n = GCM::Notification.new("id", { :data => "data" })
 
-        n.data.is_a?(Hash).should be_true
+        expect(n.data.is_a?(Hash)).to eq(true)
         n.data.should == {:data => "data"}
 
         n.data = {:a => ["a", "b", "c"]}
-        n.data.is_a?(Hash).should be_true
+        expect(n.data.is_a?(Hash)).to eq(true)
         n.data.should == {:a => ["a", "b", "c"]}
 
         n.data = {:a => "a"}
-        n.data.is_a?(Hash).should be_true
+        expect(n.data.is_a?(Hash)).to eq(true)
         n.data.should == {:a => "a"}
       end
 
