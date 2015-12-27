@@ -1,3 +1,5 @@
+** DEPRECATED **
+
 # Pushmeup
 
 ### a gem for various push notification services.
