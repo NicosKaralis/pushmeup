@@ -81,7 +81,7 @@ protected
       raise unless attempts < @retries
 
       @ssl.close unless @ssl.nil?
-      @sock.close
+      @sock.close unless @sock.nil?
 
       attempts += 1
       retry
