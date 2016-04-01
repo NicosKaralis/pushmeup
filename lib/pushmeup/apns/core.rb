@@ -28,7 +28,7 @@ module APNS
   def self.stop_persistence
     @persistent = false
 
-    @ssl.close
+    @ssl.close unless @ssl.nil?
     @sock.close
   end
 
