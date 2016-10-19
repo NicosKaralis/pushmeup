@@ -48,6 +48,7 @@ module APNS
   end
   
   def self.feedback
+    assert_pem_setup!
     sock, ssl = self.feedback_connection
 
     apns_feedback = []
@@ -67,8 +68,9 @@ module APNS
 protected
   
   def self.with_connection
+    assert_pem_setup!
     attempts = 1
-  
+
     begin      
       # If no @ssl is created or if @ssl is closed we need to start it
       if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
@@ -97,9 +99,6 @@ protected
   end
   
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
     context      = OpenSSL::SSL::SSLContext.new
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
     context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
@@ -112,9 +111,6 @@ protected
   end
   
   def self.feedback_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
     context      = OpenSSL::SSL::SSLContext.new
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
     context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
@@ -127,5 +123,9 @@ protected
 
     return sock, ssl
   end
-  
+
+  def self.assert_pem_setup!
+    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless pem
+    raise "The path to your pem file does not exist!" unless File.exist?(pem)
+  end
 end
