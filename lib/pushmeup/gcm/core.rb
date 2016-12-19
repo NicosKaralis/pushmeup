@@ -5,7 +5,7 @@ require 'json'
 module GCM
   include HTTParty
 
-  @host = 'https://android.googleapis.com/gcm/send'
+  @host = 'https://fcm.googleapis.com/fcm/send'  #'https://android.googleapis.com/gcm/send'
   @format = :json
   @key = nil
 
