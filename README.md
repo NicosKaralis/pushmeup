@@ -70,7 +70,7 @@ APNS.pass = ''
 ```ruby
 device_token = '123abc456def'
 APNS.send_notification(device_token, 'Hello iPhone!' )
-APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :silent => 0, :sound => 'default')
 ```
 
 #### Sending multiple notifications
@@ -78,7 +78,7 @@ APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :so
 ```ruby
 device_token = '123abc456def'
 n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :silent => 0, :sound => 'default')
 APNS.send_notifications([n1, n2])
 ```
 
@@ -95,11 +95,11 @@ device_token = '123abc456def'
 
 # Send single notifications
 APNS.send_notification(device_token, 'Hello iPhone!' )
-APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :silent => 0, :sound => 'default')
 
 # Send multiple notifications
 n1 = APNS::Notification.new(device_token, 'Hello iPhone!' )
-n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :silent => 0, :sound => 'default')
 APNS.send_notifications([n1, n2])
 
 ...
@@ -111,7 +111,7 @@ APNS.stop_persistence
 #### Sending more information along
 
 ```ruby
-APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :other => {:sent => 'with apns gem', :custom_param => 'value'})
+APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default', :silent => 0, :other => {:sent => 'with apns gem', :custom_param => 'value'})
 ```
 
 this will result in a payload like this:
