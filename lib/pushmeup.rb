@@ -1,4 +1,4 @@
-require "pushmeup/version"
-require "pushmeup/apple"
-require "pushmeup/android"
-require "pushmeup/amazon"
+require 'pushmeup/version'
+require 'pushmeup/apple'
+require 'pushmeup/android'
+require 'pushmeup/amazon'
