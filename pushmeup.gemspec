@@ -5,8 +5,8 @@ require 'pushmeup/version'
 Gem::Specification.new do |s|
   s.name            = 'pushmeup'
   s.version         = Pushmeup::VERSION
-  s.authors         = ['Nicos Karalis', 'Michal Pawlowski', 'Pedro Piñera Buendía']
-  s.email           = ['nicoskaralis@me.com', 'misza222@gmail.com', 'pepibumur@gmail.com']
+  s.authors         = ['Nicos Karalis', 'Michal Pawlowski', 'Pedro Piñera Buendía', 'Marta Noya']
+  s.email           = ['nicoskaralis@me.com', 'misza222@gmail.com', 'pepibumur@gmail.com', 'tim4martanoya@gmail.com']
 
   s.homepage        = 'https://github.com/NicosKaralis/pushmeup'
   s.summary         = %q{Send push notifications to Apple devices through ANPS and Android devices through GCM}
