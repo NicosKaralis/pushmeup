@@ -171,7 +171,7 @@ GCM.send_notification( destination )
 GCM.send_notification( destination, data )
 # Notification with custom information
 
-GCM.send_notification( destination, data, :collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false )
+GCM.send_notification( destination, data, :collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false, :silent => 0 )
 # Notification with custom information and parameters
 ```
 
@@ -188,7 +188,7 @@ destination3 = ['device1', 'device2', 'device3']
 data1 = {:key => 'value', :key2 => ['array', 'value']}
 # must be an hash with all values you want inside you notification
 
-options1 = {:collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false}
+options1 = {:collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false, :silent => 0}
 # options for the notification
 
 n1 = GCM::Notification.new(destination1, data1, options1)
@@ -227,7 +227,7 @@ GCM.send_notification( destination, :identity => :key1 )
 GCM.send_notification( destination, data, :identity => :key1 )
 # Notification with custom information
 
-GCM.send_notification( destination, data, :collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false, :identity => :key1 )
+GCM.send_notification( destination, data, :collapse_key => 'placar_score_global', :time_to_live => 3600, :delay_while_idle => false, :identity => :key1, :silent => 1 )
 # Notification with custom information and parameters
 
 # For multiple notifications
