@@ -76,7 +76,7 @@ module GCM
       :time_to_live => n.time_to_live,
       :delay_while_idle => n.delay_while_idle
     }
-    silent ? body[:data] = n.data : body[:notification] = n.data
+    n.silent ? body[:data] = n.data : body[:notification] = n.data
     return self.send_to_server(headers, body.to_json)
   end
 
