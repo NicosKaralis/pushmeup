@@ -29,10 +29,13 @@ module APNS
 
     def packaged_message
       aps = {'aps'=> {} }
-      aps['aps']['alert'] = self.alert if self.alert
-      aps['aps']['badge'] = self.badge if self.badge
-      aps['aps']['sound'] = self.sound if self.sound
-      aps['aps']['content-available'] = self.silent if self.silent
+      if self.silent.nonzero?
+        aps['aps']['content-available'] = self.silent
+      else
+        aps['aps']['alert'] = self.alert if self.alert
+        aps['aps']['badge'] = self.badge if self.badge
+        aps['aps']['sound'] = self.sound if self.sound
+      end
       aps.merge!(self.other) if self.other
       aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack('H*').unpack('n*').pack('U*')}
     end
