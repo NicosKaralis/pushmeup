@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: ruby:2.1.2
+    steps:
+      - checkout
+      - run: bundle install
+      - run: rspec
