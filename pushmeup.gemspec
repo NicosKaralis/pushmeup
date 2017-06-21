@@ -5,7 +5,7 @@ require "pushmeup/version"
 Gem::Specification.new do |s|
   s.name            = 'pushmeup'
   s.version         = Pushmeup::VERSION
-  s.authors         = ["Nicos Karalis"]
+  s.authors         = ["Nicos Karalis", "Ernesto Bossi"]
   s.email           = ["nicoskaralis@me.com"]
   
   s.homepage        = "https://github.com/NicosKaralis/pushmeup"
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'httparty'
   s.add_dependency 'json'
+  s.add_dependency "net-http2", ">= 0.15", "< 2"
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
