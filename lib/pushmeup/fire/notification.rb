@@ -1,24 +1,21 @@
-module FCM
+module FIRE
   class Notification
-    attr_accessor :notifications_ids, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity
+    attr_accessor :device_token, :data, :consolidationKey, :expiresAfter
 
-    def initialize(tokens, data, options = {})
-      self.device_tokens = tokens
+    def initialize(token, data, options = {})
+      self.device_token = token
       self.data = data
 
-      @collapse_key = options[:collapse_key]
-      @time_to_live = options[:time_to_live]
-      @delay_while_idle = options[:delay_while_idle]
-      @identity = options[:identity]
+      @consolidationKey = options[:consolidationKey]
+      @expiresAfter = options[:expiresAfter]
     end
 
-    def device_tokens=(notifications_ids)
-      if notifications_ids.is_a?(Array)
-        @notifications_ids = notifications_ids
-      elsif tokens.is_a?(String)
-        @notifications_ids = [notifications_ids]
+    def device_token=(token)
+
+      if token.is_a?(String)
+        @device_token = token
       else
-        raise "notifications_ids needs to be either an Array or String"
+        raise "device_token needs to be String"
       end
     end
 
@@ -30,34 +27,19 @@ module FCM
       end
     end
 
-    def delay_while_idle=(delay_while_idle)
-      @delay_while_idle = (delay_while_idle == true || delay_while_idle == :true)
-    end
-
-    def time_to_live=(time_to_live)
-      if time_to_live.is_a?(Integer)
-        @time_to_live = time_to_live
+    def expiresAfter=(expiresAfter)
+      if expiresAfter.is_a?(Integer)
+        @expiresAfter = expiresAfter
       else
-        raise %q{"time_to_live" must be seconds as an integer value, like "100"}
+        raise %q{"expiresAfter" must be seconds as an integer value, like "100"}
       end
     end
 
-    def get_options
-      options = {}
-      options[:delay_while_idle] = self.delay_while_idle if self.delay_while_idle
-      options[:time_to_live] = self.time_to_live if self.time_to_live
-      options[:collapse_key] = self.collapse_key if self.collapse_key
-      options[:identity] = self.identity if self.identity
-      options
-    end
-
     def ==(that)
-      device_tokens == that.device_tokens &&
+      device_token == that.device_token &&
           data == that.data &&
-          collapse_key == that.collapse_key &&
-          time_to_live == that.time_to_live &&
-          delay_while_idle == that.delay_while_idle &&
-          identity == that.identity
+          consolidationKey == that.consolidationKey &&
+          expiresAfter == that.expiresAfter
     end
 
   end

@@ -1,219 +1,103 @@
 require 'httparty'
-require 'cgi'
+# require 'cgi'
 require 'json'
 
-
-module FCM
+module FIRE
   include HTTParty
-  base_uri 'https://fcm.googleapis.com/fcm'
-  default_timeout 30
-  format :json
 
-  @api_key = nil #Should set the FCM api_key here if you don't want to provide it in the client code.
+  @host = 'https://api.amazon.com/messaging/registrations/%s/messages'
+  @client_id = nil
+  @client_secret = nil
 
-  GROUP_NOTIFICATION_BASE_URI = 'https://android.googleapis.com/gcm'
+  @access_token_expiration = Time.new(0)
+  @access_token = nil
 
   class << self
-    attr_accessor :timeout, :api_key
+    attr_accessor :host, :client_id, :client_secret, :access_token, :access_token_expiration
   end
 
-  def self.send_notification(registration_id, data={}, options={}, api_key=nil)
-    self.send_notifications([registration_id], data, options, api_key)
-  end
-  alias send send_notification
-
-  def self.send_notifications(registration_ids, data={}, options = {}, api_key = nil)
-    self.set_api_key api_key
-
-    notification = FCM::Notification.new(registration_ids, data, options)
-
-    self.prepare_and_send(notification)
+  def self.send_notification(device_token, data = {}, options = {})
+    n = FIRE::Notification.new(device_token, data, options)
+    self.send_notifications([n])
   end
 
-
-  def self.prepare_and_send(notification)
-
-    post_body = build_post_body(notification.notifications_ids, notification.get_options)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Authorization' => "key=#{@api_key}",
-            'Content-Type' => 'application/json'
-        }
-    }
-
-    response = self.post('/send', params)
-    build_response(response, registration_ids)
-  end
-
-  def self.create_notification_key(key_name, project_id, registration_ids = [], api_key = nil)
-    self.set_api_key api_key
-
-    post_body = build_post_body(registration_ids, operation: 'create',
-                                notification_key_name: key_name)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
-    }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
+  def self.send_notifications(notifications)
+    self.prepare_token
+    responses = []
+    notifications.each do |n|
+      responses << self.prepare_and_send(n)
     end
-
-    build_response(response)
+    responses
   end
 
+  def self.prepare_token
+    return if Time.now < self.access_token_expiration
 
-  def self.add_registration_ids(key_name, project_id, notification_key, registration_ids, api_key = nil)
-    self.set_api_key api_key
+    token = self.get_access_token
+    self.access_token = token['access_token']
+    expires_in_sec    = token['expires_in']
+    self.access_token_expiration = Time.now + expires_in_sec - 60
+  end
 
-    post_body = build_post_body(registration_ids, operation: 'add',
-                                notification_key_name: key_name,
-                                notification_key: notification_key)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
+  def self.get_access_token
+    headers = {'Content-Type' => 'application/x-www-form-urlencoded'}
+    body = {grant_type:    'client_credentials',
+            scope:         'messaging:push',
+            client_id:     self.client_id,
+            client_secret: self.client_secret
     }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
-    end
-    build_response(response)
-  end
-
-  def self.remove_registration_ids(key_name, project_id, notification_key, registration_ids, api_key = nil)
-    self.set_api_key api_key
-
-    post_body = build_post_body(registration_ids, operation: 'remove',
-                                notification_key_name: key_name,
-                                notification_key: notification_key)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
-    }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
-    end
-    build_response(response)
-  end
-
-  def self.send_with_notification_key(notification_key, options = {}, api_key = nil)
-    self.set_api_key api_key
-
-    body = {to: notification_key}.merge(options)
-
-    params = {
-        body: body.to_json,
-        headers: {
-            'Authorization' => "key=#{@api_key}",
-            'Content-Type' => 'application/json'
-        }
-    }
-
-    response = self.post('/send', params.merge(@client_options))
-    build_response(response)
-  end
-
-  def self.send_to_topic(topic, options = {})
-    if topic =~ /[a-zA-Z0-9\-_.~%]+/
-      send_with_notification_key('/topics/' + topic, options)
-    end
+    params = {headers: headers, body: body}
+    res = self.post('https://api.amazon.com/auth/O2/token', params)
+    return res.parsed_response if res.response.code.to_i == 200
+    raise 'Error getting access token'
   end
 
   private
 
-  def self.set_api_key(api_key)
-    self.api_key = api_key if self.api_key.nil?
+  def self.prepare_and_send(n)
+    if !n.consolidationKey.nil? && n.expiresAfter.nil?
+      raise %q{If you are defining a "colapse key" you need a "time to live"}
+    end
+    self.send_push(n)
   end
 
-  def self.for_uri(uri)
-    current_uri = self.base_uri
-    self.base_uri uri
-    yield
-    self.base_uri current_uri
+  def self.send_push(n)
+    headers = {
+        'Authorization'       => "Bearer #{self.access_token}",
+        'Content-Type'        => 'application/json',
+        'Accept'              => 'application/json',
+        'X-Amzn-Accept-Type'  => 'com.amazon.device.messaging.ADMSendResult@1.0',
+        'X-Amzn-Type-Version' => 'com.amazon.device.messaging.ADMMessage@1.0'
+    }
+
+    body = {
+        :data => n.data
+    }
+    body.merge!({consolidationKey: n.consolidationKey}) if n.consolidationKey
+    body.merge!({expiresAfter: n.expiresAfter}) if n.expiresAfter
+    return self.send_to_server(headers, body.to_json, n.device_token)
   end
 
-  def self.build_post_body(registration_ids, options = {})
-    ids = registration_ids.is_a?(String) ? [registration_ids] : registration_ids
-    {registration_ids: ids}.merge(options)
+  def self.send_to_server(headers, body, token)
+    params = {:headers => headers, :body => body}
+    device_dest = self.host % [token]
+    response = self.post(device_dest, params)
+    return build_response(response)
   end
 
-  def self.build_response(response, registration_ids = [])
-    body = response.body || {}
-    response_hash = {body: body, headers: response.headers, status_code: response.code}
+  def self.build_response(response)
     case response.code
       when 200
-        response_hash[:response] = 'success'
-        body = JSON.parse(body) unless body.empty?
-        response_hash[:canonical_ids] = build_canonical_ids(body, registration_ids) unless registration_ids.empty?
-        response_hash[:not_registered_ids] = build_not_registered_ids(body, registration_ids) unless registration_ids.empty?
+        {:response =>  'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => response.code}
       when 400
-        response_hash[:response] = 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields.'
+        {:response => response.parsed_response, :status_code => response.code}
       when 401
-        response_hash[:response] = 'There was an error authenticating the sender account.'
+        {:response => 'There was an error authenticating the sender account.', :status_code => response.code}
+      when 500
+        {:response => 'There was an internal error in the Amazaon server while trying to process the request.', :status_code => response.code}
       when 503
-        response_hash[:response] = 'Server is temporarily unavailable.'
-      when 500..599
-        response_hash[:response] = 'There was an internal error in the FCM server while trying to process the request.'
-      else
-        response_hash[:response] = 'Unknown Error from API.'
+        {:response => 'Server is temporarily unavailable.', :status_code => response.code}
     end
-    response_hash
-  end
-
-  def self.build_canonical_ids(body, registration_ids)
-    canonical_ids = []
-    unless body.empty?
-      if body['canonical_ids'] > 0
-        body['results'].each_with_index do |result, index|
-          canonical_ids << {old: registration_ids[index], new: result['registration_id']} if has_canonical_id?(result)
-        end
-      end
-    end
-    canonical_ids
-  end
-
-  def self.build_not_registered_ids(body, registration_id)
-    not_registered_ids = []
-    unless body.empty?
-      if body['failure'] > 0
-        body['results'].each_with_index do |result, index|
-          not_registered_ids << registration_id[index] if is_not_registered?(result)
-        end
-      end
-    end
-    not_registered_ids
-  end
-
-  def self.has_canonical_id?(result)
-    !result['registration_id'].nil?
-  end
-
-  def self.is_not_registered?(result)
-    result['error'] == 'NotRegistered'
   end
 
 end
