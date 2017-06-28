@@ -39,16 +39,16 @@ module APNS
 
     @logger = Logger.new(_logger_route)
     n = APNS::Notification.new(device_token, message)
-    logger.debug "[Pushmeup::IOS::Send] Sending the following raw request #{n.packaged_notification}"
+    @logger.debug "[Pushmeup::IOS::Send] Sending the following raw request #{n.packaged_notification}"
     self.send_notifications([n])
   end
   
   def self.send_notifications(notifications)
     @mutex.synchronize do
       self.with_connection do
-        logger.debug "[Pushmeup::send_notifications] Connection established.. Sending notifications"
+        @logger.debug "[Pushmeup::send_notifications] Connection established.. Sending notifications"
         notifications.each do |n|
-          logger.debug "[Pushmeup::send_notifications] Writing the following raw request in the ssl socket: #{n.packaged_notification}"
+          @logger.debug "[Pushmeup::send_notifications] Writing the following raw request in the ssl socket: #{n.packaged_notification}"
           @ssl.write(n.packaged_notification)
         end
       end
@@ -60,7 +60,7 @@ module APNS
 
     apns_feedback = []
 
-    logger.debug "[Pushmeup::feedback] Getting feedback from the API"
+    @logger.debug "[Pushmeup::feedback] Getting feedback from the API"
 
     while line = ssl.read(38)   # Read lines from the socket
       line.strip!
@@ -89,11 +89,11 @@ protected
     
     rescue StandardError, Errno::EPIPE => e
       unless attempts < @retries
-        logger.debug "[Pushmeup::with_connection] Reached maximum retires... Exiting"
+        @logger.debug "[Pushmeup::with_connection] Reached maximum retires... Exiting"
         raise "Reached maximum retries"
       end
 
-      logger.debug "[Pushmeup::with_connection] A problem establishing the connection happened. Reason: #{e.backtrace}"
+      @logger.debug "[Pushmeup::with_connection] A problem establishing the connection happened. Reason: #{e.backtrace}"
       @ssl.close unless @ssl.nil?
       @sock.close unless @sock.nil?
     
@@ -103,7 +103,7 @@ protected
   
     # Only force close if not persistent
     unless @persistent
-      logger.debug "[Pushmeup::with_connection] Finished successfully. Closing non persistent connection..."
+      @logger.debug "[Pushmeup::with_connection] Finished successfully. Closing non persistent connection..."
       @ssl.close
       @ssl = nil
       @sock.close
@@ -114,23 +114,26 @@ protected
   def self.open_connection
     unless self.pem
       msg = "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)"
-      logger.debug("[Pushmeup:open_connection] #{msg}")
+      @logger.debug("[Pushmeup:open_connection] #{msg}")
       raise msg
     end
 
     unless File.exist?(self.pem)
       msg = "The path to your pem file does not exist!"
-      logger.debug("[Pushmeup:open_connection] #{msg}")
+      @logger.debug("[Pushmeup:open_connection] #{msg}")
     end
     
     context      = OpenSSL::SSL::SSLContext.new
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
     context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
 
+    @logger.debug "[Pushmeup::with_connection] Successfully set up cert #{context.cert} and key #{context.key}"
+
     sock         = TCPSocket.new(self.host, self.port)
     ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
     ssl.connect
 
+    @logger.debug "[Pushmeup::open_connection] Successfully created the sock ssl connection."
     return sock, ssl
   end
   
@@ -141,7 +144,7 @@ protected
     context      = OpenSSL::SSL::SSLContext.new
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
     context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-    
+
     fhost = self.host.gsub('gateway','feedback')
     
     sock         = TCPSocket.new(fhost, 2196)
