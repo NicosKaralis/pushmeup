@@ -17,7 +17,8 @@ module APNS
   
   @sock = nil
   @ssl = nil
-  
+  @logger = nil
+
   class << self
     attr_accessor :host, :pem, :port, :pass
   end
@@ -28,12 +29,15 @@ module APNS
   
   def self.stop_persistence
     @persistent = false
-    
+
     @ssl.close
     @sock.close
   end
   
-  def self.send_notification(device_token, message)
+  def self.send_notification(device_token, message, options = {})
+    _logger_route = options.has_key?("rails_log_route") ? options[:rails_log_route] : STDOUT
+
+    @logger = Logger.new(_logger_route)
     n = APNS::Notification.new(device_token, message)
     logger.debug "[Pushmeup::IOS::Send] Sending the following raw request #{n.packaged_notification}"
     self.send_notifications([n])
