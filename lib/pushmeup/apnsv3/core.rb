@@ -17,7 +17,7 @@ module APNSV3
   end
 
   def self.send_notification(device_token, message, options = {})
-    n = APNS::Notification.new(device_token, message)
+    n = APNSV3::Notification.new(device_token, message)
     self.send_individual_notification(n, options)
   end
 
@@ -38,8 +38,9 @@ module APNSV3
 
   def self.send_individual_notification(notification, options = {})
     @url = options[:url] || APPLE_PRODUCTION_SERVER_URL
-    @cert_pem = options[:cert_pem] unless @cert_pem and options[:cert_pem]
-    @cert_key = options[:cert_key] unless @cert_key and options[:cert_key]
+
+    @cert_pem = options[:cert_pem] if @cert_pem.nil? and options[:cert_pem]
+    @cert_key = options[:cert_key] if @cert_key.nil? and options[:cert_key]
     @connect_timeout = options[:connect_timeout] || 30
 
     @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
@@ -81,12 +82,12 @@ module APNSV3
     @ssl_context ||= begin
       ctx = OpenSSL::SSL::SSLContext.new
       begin
-        p12 = OpenSSL::PKCS12.new(certificate, @cert_key)
+        p12 = OpenSSL::PKCS12.new(self.certificate, @cert_key)
         ctx.key = p12.key
         ctx.cert = p12.certificate
       rescue OpenSSL::PKCS12::PKCS12Error
-        ctx.key = OpenSSL::PKey::RSA.new(certificate, @cert_key)
-        ctx.cert = OpenSSL::X509::Certificate.new(certificate)
+        ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @cert_key)
+        ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
       end
       ctx
     end
@@ -98,7 +99,6 @@ module APNSV3
         cert = @cert_pem.read
         @cert_pem.rewind if @cert_pem.respond_to?(:rewind)
       else
-        puts @cert_pem
         cert = File.read(@cert_pem)
       end
       cert
@@ -107,7 +107,7 @@ module APNSV3
 
   def self.check_before_send
     raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.cert_pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.cert_pem)
+    raise "The path to your pem file does not exist!" unless self.cert_pem.is_a?(String) and File.exist?(self.cert_pem)
 
     raise "The path to your key file is not set. (APNS.key = '/path/to/key')" unless self.cert_key
     raise "The path to your apple key file does not exist!" unless File.exist?(self.cert_key)
