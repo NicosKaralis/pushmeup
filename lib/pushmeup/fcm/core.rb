@@ -1,7 +1,7 @@
 require 'httparty'
 require 'cgi'
 require 'json'
-
+require_relative 'notification'
 
 module FCM
   include HTTParty
@@ -9,7 +9,7 @@ module FCM
   default_timeout 30
   format :json
 
-  @api_key = nil #Should set the FCM api_key here if you don't want to provide it in the client code.
+  @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
 
   GROUP_NOTIFICATION_BASE_URI = 'https://android.googleapis.com/gcm'
 
@@ -18,22 +18,21 @@ module FCM
   end
 
   def self.send_notification(registration_id, data={}, options={}, api_key=nil)
-    self.send_notifications([registration_id], data, options, api_key)
+    self.send_notifications(registration_id, data, options, api_key)
   end
-  alias send send_notification
 
   def self.send_notifications(registration_ids, data={}, options = {}, api_key = nil)
     self.set_api_key api_key
 
-    notification = FCM::Notification.new(registration_ids, data, options)
-
+    notification = Notification.new(registration_ids, data, options)
     self.prepare_and_send(notification)
   end
 
 
   def self.prepare_and_send(notification)
+    notification_ids = notification.notifications_ids
 
-    post_body = build_post_body(notification.notifications_ids, notification.get_options)
+    post_body = build_post_body(notification_ids, notification.get_options)
 
     params = {
         body: post_body.to_json,
@@ -44,7 +43,7 @@ module FCM
     }
 
     response = self.post('/send', params)
-    build_response(response, registration_ids)
+    build_response(response, notification_ids)
   end
 
   def self.create_notification_key(key_name, project_id, registration_ids = [], api_key = nil)
@@ -177,7 +176,7 @@ module FCM
       when 503
         response_hash[:response] = 'Server is temporarily unavailable.'
       when 500..599
-        response_hash[:response] = 'There was an internal error in the FCM server while trying to process the request.'
+        response_hash[:response] = 'There was an internal error in the fcm server while trying to process the request.'
       else
         response_hash[:response] = 'Unknown Error from API.'
     end

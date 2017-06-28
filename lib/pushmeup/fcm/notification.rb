@@ -1,4 +1,5 @@
 module FCM
+
   class Notification
     attr_accessor :notifications_ids, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity
 
@@ -15,7 +16,7 @@ module FCM
     def device_tokens=(notifications_ids)
       if notifications_ids.is_a?(Array)
         @notifications_ids = notifications_ids
-      elsif tokens.is_a?(String)
+      elsif notifications_ids.is_a?(String)
         @notifications_ids = [notifications_ids]
       else
         raise "notifications_ids needs to be either an Array or String"
@@ -42,12 +43,17 @@ module FCM
       end
     end
 
+    def data_present?
+      self.data and !self.data.empty?
+    end
+
     def get_options
       options = {}
       options[:delay_while_idle] = self.delay_while_idle if self.delay_while_idle
       options[:time_to_live] = self.time_to_live if self.time_to_live
       options[:collapse_key] = self.collapse_key if self.collapse_key
       options[:identity] = self.identity if self.identity
+      options[:data] = self.data if self.data_present?
       options
     end
 
