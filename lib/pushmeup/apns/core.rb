@@ -68,6 +68,11 @@ module APNS
       apns_feedback << { :timestamp => Time.at(f[0]), :token => f[2] }
     end
 
+    if ssl.nil?
+      @logger.debug "[Pushmeup::feedback] SSL is NIL"
+    else
+      @logger.debug "[Pushmeup::feedback] " + ssl.to_s
+    end
     ssl.close
     sock.close
 
@@ -78,7 +83,9 @@ protected
   
   def self.with_connection
     attempts = 1
-  
+
+    @logger.debug "[Pushmeup::with_connection] "
+
     begin      
       # If no @ssl is created or if @ssl is closed we need to start it
       if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
@@ -88,6 +95,9 @@ protected
       yield
     
     rescue StandardError, Errno::EPIPE => e
+
+      @logger.debug "[Pushmeup::with_connection] " + e.to_s
+
       unless attempts < @retries
         @logger.debug "[Pushmeup::with_connection] Reached maximum retires... Exiting"
         raise "Reached maximum retries"
