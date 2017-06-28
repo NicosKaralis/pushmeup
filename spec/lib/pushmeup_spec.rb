@@ -79,30 +79,4 @@ describe Pushmeup do
     end
   end
 
-  describe "Fire" do
-
-  end
-
-  describe "APNSv3" do
-    it "should have a GCM object" do
-      defined?(APNSV3).should_not be_false
-    end
-
-    context "Notification creation" do
-      context "Success" do
-        notification = APNSV3::Notification.new("id", "some message")
-        notification.class.should == (APNSV3::Notification)
-      end
-
-      context "Failure" do
-        it "message should not be anything than a Hash or a String" do
-          expect{ APNSV3::Notification.new("id", 2)}.to raise_error Exception
-        end
-      end
-
-
-
-    end
-
-  end
 end

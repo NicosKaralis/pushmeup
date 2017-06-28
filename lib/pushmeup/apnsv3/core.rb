@@ -31,13 +31,18 @@ module APNSV3
     end
   end
 
+  def self.set_cert_key_and_pem(cert_key, cert_pem)
+    @cert_pem = cert_pem if @cert_pem.nil?
+    @cert_key = cert_key if @cert_key.nil?
+  end
+
   def self.send_individual_notification(notification, options = {})
     @url = options[:url] || APPLE_PRODUCTION_SERVER_URL
     @cert_pem = options[:cert_pem] unless @cert_pem and options[:cert_pem]
     @cert_key = options[:cert_key] unless @cert_key and options[:cert_key]
     @connect_timeout = options[:connect_timeout] || 30
 
-    @client = NetHttp2::Client.new(@url, ssl_context: ssl_context, connect_timeout: @connect_timeout)
+    @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
 
     self.check_before_send
     self.send_push(notification)
@@ -52,7 +57,7 @@ module APNSV3
     begin
       # If no @ssl is created or if @ssl is closed we need to start it
       if @ssl_context.blank?
-        @ssl_context = ssl_context
+        @ssl_context = self.ssl_context
       end
 
       yield
@@ -72,7 +77,7 @@ module APNSV3
     end
   end
 
-  def ssl_context
+  def self.ssl_context
     @ssl_context ||= begin
       ctx = OpenSSL::SSL::SSLContext.new
       begin
@@ -87,12 +92,13 @@ module APNSV3
     end
   end
 
-  def certificate
+  def self.certificate
     @certificate ||= begin
       if @cert_pem.respond_to?(:read)
         cert = @cert_pem.read
         @cert_pem.rewind if @cert_pem.respond_to?(:rewind)
       else
+        puts @cert_pem
         cert = File.read(@cert_pem)
       end
       cert
