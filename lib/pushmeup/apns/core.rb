@@ -1,6 +1,7 @@
 require 'socket'
 require 'openssl'
 require 'json'
+require 'logger'
 
 module APNS
 
@@ -34,13 +35,16 @@ module APNS
   
   def self.send_notification(device_token, message)
     n = APNS::Notification.new(device_token, message)
+    logger.debug "[Pushmeup::IOS::Send] Sending the following raw request #{n.packaged_notification}"
     self.send_notifications([n])
   end
   
   def self.send_notifications(notifications)
     @mutex.synchronize do
       self.with_connection do
+        logger.debug "[Pushmeup::send_notifications] Connection established.. Sending notifications"
         notifications.each do |n|
+          logger.debug "[Pushmeup::send_notifications] Writing the following raw request in the ssl socket: #{n.packaged_notification}"
           @ssl.write(n.packaged_notification)
         end
       end
@@ -51,6 +55,8 @@ module APNS
     sock, ssl = self.feedback_connection
 
     apns_feedback = []
+
+    logger.debug "[Pushmeup::feedback] Getting feedback from the API"
 
     while line = ssl.read(38)   # Read lines from the socket
       line.strip!
@@ -77,11 +83,15 @@ protected
     
       yield
     
-    rescue StandardError, Errno::EPIPE
-      raise unless attempts < @retries
-    
-      @ssl.close
-      @sock.close
+    rescue StandardError, Errno::EPIPE => e
+      unless attempts < @retries
+        logger.debug "[Pushmeup::with_connection] Reached maximum retires... Exiting"
+        raise "Reached maximum retries"
+      end
+
+      logger.debug "[Pushmeup::with_connection] A problem establishing the connection happened. Reason: #{e.backtrace}"
+      @ssl.close unless @ssl.nil?
+      @sock.close unless @sock.nil?
     
       attempts += 1
       retry
@@ -89,6 +99,7 @@ protected
   
     # Only force close if not persistent
     unless @persistent
+      logger.debug "[Pushmeup::with_connection] Finished successfully. Closing non persistent connection..."
       @ssl.close
       @ssl = nil
       @sock.close
@@ -97,8 +108,16 @@ protected
   end
   
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
+    unless self.pem
+      msg = "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)"
+      logger.debug("[Pushmeup:open_connection] #{msg}")
+      raise msg
+    end
+
+    unless File.exist?(self.pem)
+      msg = "The path to your pem file does not exist!"
+      logger.debug("[Pushmeup:open_connection] #{msg}")
+    end
     
     context      = OpenSSL::SSL::SSLContext.new
     context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
