@@ -57,13 +57,6 @@ module APNS
     sock, ssl = self.feedback_connection
     apns_feedback = []
 
-    if ssl.nil?
-      @logger.debug "[Pushmeup::feedback] SSL is NIL"
-      return apns_feedback
-    else
-      @logger.debug "[Pushmeup::feedback] " + ssl.to_s
-    end
-
     @logger.debug "[Pushmeup::feedback] Getting feedback from the API"
 
     while line = ssl.read(38)   # Read lines from the socket
