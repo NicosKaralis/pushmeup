@@ -39,14 +39,12 @@ module APNS
 
     @logger = Logger.new(_logger_route)
     n = APNS::Notification.new(device_token, message)
-    @logger.debug "[Pushmeup::IOS::Send] Sending the following raw request #{n.packaged_notification}"
     self.send_notifications([n])
   end
   
   def self.send_notifications(notifications)
     @mutex.synchronize do
       self.with_connection do
-        @logger.debug "[Pushmeup::send_notifications] Connection established.. Sending notifications"
         notifications.each do |n|
           @logger.debug "[Pushmeup::send_notifications] Writing the following raw request in the ssl socket: #{n.packaged_notification}"
           @ssl.write(n.packaged_notification)
@@ -57,7 +55,6 @@ module APNS
   
   def self.feedback
     sock, ssl = self.feedback_connection
-
     apns_feedback = []
 
     @logger.debug "[Pushmeup::feedback] Getting feedback from the API"
@@ -68,11 +65,6 @@ module APNS
       apns_feedback << { :timestamp => Time.at(f[0]), :token => f[2] }
     end
 
-    if ssl.nil?
-      @logger.debug "[Pushmeup::feedback] SSL is NIL"
-    else
-      @logger.debug "[Pushmeup::feedback] " + ssl.to_s
-    end
     ssl.close
     sock.close
 
@@ -84,8 +76,6 @@ protected
   def self.with_connection
     attempts = 1
 
-    @logger.debug "[Pushmeup::with_connection] "
-
     begin      
       # If no @ssl is created or if @ssl is closed we need to start it
       if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
@@ -96,14 +86,13 @@ protected
     
     rescue StandardError, Errno::EPIPE => e
 
-      @logger.debug "[Pushmeup::with_connection] " + e.to_s
+      @logger.debug "[Pushmeup::with_connection] A problem establishing the connection happened. Reason: #{e.to_s}. Backtrace: #{e.backtrace}"
 
       unless attempts < @retries
         @logger.debug "[Pushmeup::with_connection] Reached maximum retires... Exiting"
         raise "Reached maximum retries"
       end
 
-      @logger.debug "[Pushmeup::with_connection] A problem establishing the connection happened. Reason: #{e.backtrace}"
       @ssl.close unless @ssl.nil?
       @sock.close unless @sock.nil?
     
@@ -131,6 +120,7 @@ protected
     unless File.exist?(self.pem)
       msg = "The path to your pem file does not exist!"
       @logger.debug("[Pushmeup:open_connection] #{msg}")
+      raise msg
     end
     
     context      = OpenSSL::SSL::SSLContext.new
