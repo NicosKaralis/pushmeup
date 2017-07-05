@@ -1,3 +1,2 @@
 module Pushmeup
-  VERSION = "0.3.2"
-end
+  VERSION = "0.3.3"
