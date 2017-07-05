@@ -26,10 +26,11 @@ Gem::Specification.new do |s|
 
   s.require_paths = ["lib"]
 
-  s.add_dependency 'httparty'
+  s.add_dependency 'httparty', '0.14'
   s.add_dependency 'json'
   s.add_dependency "net-http2", ">= 0.15", "< 2"
 
+  s.add_development_dependency 'webmock'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
 end
