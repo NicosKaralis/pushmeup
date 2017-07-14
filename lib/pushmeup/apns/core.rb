@@ -80,8 +80,8 @@ protected
     rescue StandardError, Errno::EPIPE
       raise unless attempts < @retries
     
-      @ssl.close
-      @sock.close
+      @ssl.close if @ssl
+      @sock.close if @sock
     
       attempts += 1
       retry
