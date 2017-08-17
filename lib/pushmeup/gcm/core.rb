@@ -89,7 +89,7 @@ module GCM
 
       def send_to_server(headers, body)
         params = { headers: headers, body: body}
-        response = post(@host, params)
+        response = HTTParty.post(@host, params)
         build_response(response)
       end
 
