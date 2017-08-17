@@ -32,12 +32,12 @@ module GCM
     end
   end
 
-  def self.send_notification(device_tokens, data = {}, options = {})
+  def send_notification(device_tokens, data = {}, options = {})
     n = GCM::Notification.new(device_tokens, data, options)
     self.send_notifications([n])
   end
 
-  def self.send_notifications(notifications)
+  def send_notifications(notifications)
     responses = []
     notifications.each do |n|
       responses << self.prepare_and_send(n)
