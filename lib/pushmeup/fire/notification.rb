@@ -15,7 +15,7 @@ module FIRE
       if token.is_a?(String)
         @device_token = token
       else
-        raise "device_token needs to be String"
+        raise 'device_token needs to be String'
       end
     end
 
@@ -23,7 +23,7 @@ module FIRE
       if data.is_a?(Hash)
         @data = data
       else
-        raise "data parameter must be the type of Hash"
+        raise 'data parameter must be the type of Hash'
       end
     end
 

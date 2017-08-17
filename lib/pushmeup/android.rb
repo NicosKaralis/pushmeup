@@ -1,2 +1,2 @@
-require "pushmeup/gcm/core"
-require "pushmeup/gcm/notification"
+require 'pushmeup/gcm/core'
+require 'pushmeup/gcm/notification'

@@ -12,14 +12,14 @@ module APNS
       elsif message.is_a?(String)
         self.alert = message
       else
-        raise "Notification needs to have either a Hash or String"
+        raise 'Notification needs to have either a Hash or String'
       end
     end
 
     def packaged_notification
       pt = self.packaged_token
       pm = self.packaged_message
-      [0, 0, 32, pt, 0, pm.bytesize, pm].pack("ccca*cca*")
+      [0, 0, 32, pt, 0, pm.bytesize, pm].pack('ccca*cca*')
     end
 
     def packaged_token

@@ -1,2 +1,2 @@
-require "pushmeup/fire/core"
-require "pushmeup/fire/notification"
+require 'pushmeup/fire/core'
+require 'pushmeup/fire/notification'
