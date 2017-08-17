@@ -48,7 +48,7 @@ module GCM
   private
     def self.prepare_and_send(n)
       if n.device_tokens.count < 1 || n.device_tokens.count > 1000
-        raise "Number of device_tokens invalid, keep it betwen 1 and 1000"
+        raise 'Number of device_tokens invalid, keep it betwen 1 and 1000'
       end
       if !n.collapse_key.nil? && n.time_to_live.nil?
         raise %q{If you are defining a "colapse key" you need a "time to live"}
@@ -62,7 +62,7 @@ module GCM
       elsif self.format == :text
         self.send_push_as_plain_text(n)
       else
-        raise "Invalid format"
+        raise 'Invalid format'
       end
     end
 
@@ -82,7 +82,7 @@ module GCM
     end
 
     def self.send_push_as_plain_text(n)
-      raise "Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html"
+      raise 'Still has to be done: http://developer.android.com/guide/google/gcm/gcm.html'
       headers = {
         # TODO: Aceitar key ser um hash
         'Authorization' => "key=#{ self.key(n.identity) }",

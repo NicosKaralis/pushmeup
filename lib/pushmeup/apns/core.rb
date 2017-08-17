@@ -4,7 +4,7 @@ require 'json'
 
 module APNS
   class Application
-    attr_accessor :host, :pem, :port, :pass, :app_id
+    attr_accessor :host, :pem, :port, :pass
 
     def initialize (host = 'gateway.sandbox.push.apple.com', pem = nil, pem_pass = nil, port = 2195)
       @host = host unless host == nil
@@ -19,10 +19,6 @@ module APNS
 
     @sock = nil
     @ssl = nil
-
-    class << self
-      attr_accessor :host, :pem, :port, :pass
-    end
 
     def self.start_persistence
       @persistent = true
@@ -68,7 +64,6 @@ module APNS
     end
 
   protected
-
     def self.with_connection
       attempts = 1
 
@@ -100,8 +95,8 @@ module APNS
     end
 
     def self.open_connection
-      raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-      raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
+      raise 'The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)' unless self.pem
+      raise 'The path to your pem file does not exist!' unless File.exist?(self.pem)
 
       context      = OpenSSL::SSL::SSLContext.new
       context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
@@ -115,8 +110,8 @@ module APNS
     end
 
     def self.feedback_connection
-      raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-      raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
+      raise 'The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)' unless self.pem
+      raise 'The path to your pem file does not exist!' unless File.exist?(self.pem)
 
       context      = OpenSSL::SSL::SSLContext.new
       context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))

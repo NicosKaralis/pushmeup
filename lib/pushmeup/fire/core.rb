@@ -6,16 +6,14 @@ module FIRE
   class Application
     include HTTParty
 
+    attr_accessor :host, :client_id, :client_secret, :access_token, :access_token_expiration
+
     def initialize(host = 'https://api.amazon.com/messaging/registrations/%s/messages', client_id = nil, client_secret = nil, access_token_expiration = Time.new(0), access_token = nil)
       @host = host unless host == nil
       @client_id = client_id unless client_id == nil
       @client_secret = client_secret unless client_secret == nil
       @access_token_expiration = access_token_expiration unless access_token_expiration == nil
       @access_token = access_token unless access_token == nil
-    end
-
-    class << self
-      attr_accessor :host, :client_id, :client_secret, :access_token, :access_token_expiration
     end
 
     def self.send_notification(device_token, data = {}, options = {})
