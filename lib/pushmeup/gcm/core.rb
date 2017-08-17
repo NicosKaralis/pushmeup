@@ -6,48 +6,46 @@ module GCM
   class Application
     include HTTParty
 
-    def initialize (host = 'https://android.googleapis.com/gcm/send', format = :json, key = nil)
+    attr_accessor :host, :format, :key
+
+    def initialize(host = 'https://android.googleapis.com/gcm/send', format = :json, key = nil)
       @host = host unless host == nil
       @format = format unless format == nil
       @key = key unless key == nil
     end
 
-    class << self
-      attr_accessor :host, :format, :key
-
-      def key(identity = nil)
-        if @key.is_a?(Hash)
-          raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!} if identity.nil?
-          return @key[identity]
-        else
-          return @key
-        end
-      end
-
-      def key_identities
-        if @key.is_a?(Hash)
-          return @key.keys
-        else
-          return nil
-        end
+    def key(identity = nil)
+      if @key.is_a?(Hash)
+        raise %{If your key is a hash of keys you'l need to pass a identifier to the notification!} if identity.nil?
+        @key[identity]
+      else
+        @key
       end
     end
 
-    def self.send_notification(device_tokens, data = {}, options = {})
-      n = GCM::Notification.new(device_tokens, data, options)
-      self.send_notifications([n])
-    end
-
-    def self.send_notifications(notifications)
-      responses = []
-      notifications.each do |n|
-        responses << self.prepare_and_send(n)
+    def key_identities
+      if @key.is_a?(Hash)
+        @key.keys
+      else
+        nil
       end
-      responses
     end
+  end
 
-    private
+  def self.send_notification(device_tokens, data = {}, options = {})
+    n = GCM::Notification.new(device_tokens, data, options)
+    self.send_notifications([n])
+  end
 
+  def self.send_notifications(notifications)
+    responses = []
+    notifications.each do |n|
+      responses << self.prepare_and_send(n)
+    end
+    responses
+  end
+
+  private
     def self.prepare_and_send(n)
       if n.device_tokens.count < 1 || n.device_tokens.count > 1000
         raise "Number of device_tokens invalid, keep it betwen 1 and 1000"
@@ -113,5 +111,4 @@ module GCM
           {:response => 'Server is temporarily unavailable.', :status_code => response.code}
       end
     end
-  end
 end
