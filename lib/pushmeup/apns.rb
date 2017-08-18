@@ -1,2 +1,2 @@
-require 'pushmeup/apns/core'
+require 'pushmeup/apns/application'
 require 'pushmeup/apns/notification'

@@ -2,8 +2,8 @@ module GCM
   class Notification
     attr_accessor :device_tokens, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity
 
-    def initialize(tokens, data, options = {})
-      self.device_tokens = tokens
+    def initialize(device_tokens, data, options = {})
+      self.device_tokens = device_tokens
       self.data = data
 
       @collapse_key = options[:collapse_key]
@@ -18,7 +18,7 @@ module GCM
       elsif tokens.is_a?(String)
         @device_tokens = [tokens]
       else
-        raise 'device_tokens needs to be either a Hash or String'
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.device_tokens_must_be_array_or_string'))
       end
     end
 
@@ -26,7 +26,7 @@ module GCM
       if data.is_a?(Hash)
         @data = data
       else
-        raise 'data parameter must be the type of Hash'
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.data_parameter_must_be_a_hash'))
       end
     end
 
@@ -38,7 +38,7 @@ module GCM
       if time_to_live.is_a?(Integer)
         @time_to_live = time_to_live
       else
-        raise %q{"time_to_live" must be seconds as an integer value, like "100"}
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.time_to_live_must_be_an_integer'))
       end
     end
 
@@ -50,6 +50,5 @@ module GCM
       delay_while_idle == that.delay_while_idle &&
       identity == that.identity
     end
-
   end
 end

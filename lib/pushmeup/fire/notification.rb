@@ -11,11 +11,10 @@ module FIRE
     end
 
     def device_token=(token)
-
       if token.is_a?(String)
         @device_token = token
       else
-        raise 'device_token needs to be String'
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.device_token_must_be_a_string'))
       end
     end
 
@@ -23,7 +22,7 @@ module FIRE
       if data.is_a?(Hash)
         @data = data
       else
-        raise 'data parameter must be the type of Hash'
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.data_parameter_must_be_a_hash'))
       end
     end
 
@@ -31,7 +30,7 @@ module FIRE
       if expiresAfter.is_a?(Integer)
         @expiresAfter = expiresAfter
       else
-        raise %q{"expiresAfter" must be seconds as an integer value, like "100"}
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.expires_after_must_be_an_integer'))
       end
     end
 
@@ -41,6 +40,5 @@ module FIRE
           consolidationKey == that.consolidationKey &&
           expiresAfter == that.expiresAfter
     end
-
   end
 end

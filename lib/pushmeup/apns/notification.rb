@@ -12,7 +12,7 @@ module APNS
       elsif message.is_a?(String)
         self.alert = message
       else
-        raise 'Notification needs to have either a Hash or String'
+        raise Exception::PushmeupException.new(I18n.t('errors.internal.message_must_be_a_hash_or_string'))
       end
     end
 
@@ -32,7 +32,7 @@ module APNS
       aps['aps']['badge'] = self.badge if self.badge
       aps['aps']['sound'] = self.sound if self.sound
       aps.merge!(self.other) if self.other
-      aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack("H*").unpack("n*").pack("U*")}
+      aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack('H*').unpack('n*').pack('U*')}
     end
 
     def ==(that)
@@ -42,6 +42,5 @@ module APNS
       sound == that.sound &&
       other == that.other
     end
-
   end
 end
