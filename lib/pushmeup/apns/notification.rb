@@ -12,7 +12,7 @@ module APNS
       elsif message.is_a?(String)
         self.alert = message
       else
-        raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.message_must_be_a_hash_or_string'))
+        raise Exceptions::PushmeupException.new('Message must either be a Hash or String')
       end
     end
 

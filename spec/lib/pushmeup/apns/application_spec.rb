@@ -16,7 +16,7 @@ describe Pushmeup do
     describe '#feedback' do
       it 'raises exception if pem is not set' do
         apns_app = APNS::Application.new
-        expect { apns_app.feedback }.to raise_exception(Exceptions::PushmeupException.new(I18n.t('errors.internal.pem_is_not_set')))
+        expect { apns_app.feedback }.to raise_exception(Exceptions::PushmeupException, 'PEM is not set')
       end
 
       context 'with no existing PEM file' do
@@ -26,7 +26,7 @@ describe Pushmeup do
 
         it 'raises exception if pem file does not exist' do
           apns_app = APNS::Application.new(default_apns_host, pem_location, pem_password)
-          expect { apns_app.feedback }.to raise_exception(Exceptions::PushmeupException)
+          expect { apns_app.feedback }.to raise_exception(Exceptions::PushmeupException, 'PEM does not exist')
         end
       end
 
@@ -94,7 +94,7 @@ describe Pushmeup do
         it 'raises exception if pem is not set' do
           apns_app = APNS::Application.new
           apns_app.start_persistence
-          expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException)
+          expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException, 'PEM is not set')
         end
 
         context 'with no existing PEM file' do
@@ -105,7 +105,7 @@ describe Pushmeup do
           it 'raises exception if pem file does not exist' do
             apns_app = APNS::Application.new(default_apns_host, pem_location, pem_password)
             apns_app.start_persistence
-            expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException)
+            expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException, 'PEM does not exist')
           end
         end
 
@@ -156,7 +156,7 @@ describe Pushmeup do
       context 'without persistence' do
         it 'raises exception if pem is not set' do
           apns_app = APNS::Application.new
-          expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException)
+          expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException, 'PEM is not set')
         end
 
         context 'with no existing PEM file' do
@@ -166,7 +166,7 @@ describe Pushmeup do
 
           it 'raises exception if pem file does not exist' do
             apns_app = APNS::Application.new(default_apns_host, pem_location, pem_password)
-            expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException)
+            expect { apns_app.send_notification(device_token, message) }.to raise_exception(Exceptions::PushmeupException, 'PEM does not exist')
           end
         end
 

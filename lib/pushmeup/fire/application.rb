@@ -5,14 +5,18 @@ module FIRE
   class Application
     include HTTParty
 
-    DEFAULT_FIRE_HOST = 'https://api.amazon.com/messaging/registrations/%s/messages'.freeze
+    attr_accessor :host, :client_id, :client_secret, :access_token_expiration, :access_token
 
-    def initialize(host = DEFAULT_FIRE_HOST, client_id = nil, client_secret = nil, access_token_expiration = Time.new(0), access_token = nil)
+    DEFAULT_FIRE_HOST = 'https://api.amazon.com/messaging/registrations/messages'.freeze
+
+    FIRE_TOKEN_URL = 'https://api.amazon.com/auth/O2/token'.freeze
+
+    def initialize(host = DEFAULT_FIRE_HOST, client_id = nil, client_secret = nil, access_token = nil, access_token_expiration = Time.new(0))
       @host = host unless host == nil
       @client_id = client_id unless client_id == nil
       @client_secret = client_secret unless client_secret == nil
-      @access_token_expiration = access_token_expiration unless access_token_expiration == nil
       @access_token = access_token unless access_token == nil
+      @access_token_expiration = access_token_expiration unless access_token_expiration == nil
     end
 
     def send_notification(device_token, data = {}, options = {})
@@ -34,7 +38,7 @@ module FIRE
 
       token = get_access_token
       @access_token = token['access_token']
-      expires_in_sec = token['expires_in']
+      expires_in_sec = token['expires_in'].to_i
       @access_token_expiration = Time.now + expires_in_sec - 60
     end
 
@@ -47,15 +51,15 @@ module FIRE
         client_secret: @client_secret
       }
       params = {headers: headers, body: body}
-      res = HTTPParty.post('https://api.amazon.com/auth/O2/token', params)
-      return res.parsed_response if res.response.code.to_i == 200
-      raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.amazon_token'))
+      result = HTTParty.post(FIRE_TOKEN_URL, params)
+      return result.parsed_response if result.response.code.to_i == 200
+      raise Exceptions::PushmeupException.new('Error requesting access token from Amazon')
     end
 
     private
       def prepare_and_send(notification)
         if !notification.consolidationKey.nil? && notification.expiresAfter.nil?
-          raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.consolidation_key_without_expires_after'))
+          raise Exceptions::PushmeupException.new('Need expiresAfter if consolidationKey is used')
         end
         send_push(notification)
       end
@@ -80,22 +84,22 @@ module FIRE
       def send_to_server(headers, body, token)
         params = { headers: headers, body: body}
         device_dest = @host % [token]
-        response = HTTPParty.post(device_dest, params)
+        response = HTTParty.post(device_dest, params)
         build_response(response)
       end
 
       def build_response(response)
         case response.code
           when 200
-            { response: I18n.t('pushmeup.success'), body: JSON.parse(response.body), headers: response.headers, status_code: response.code}
+            { response: 'success', body: JSON.parse(response.body), headers: response.headers, status_code: response.code}
           when 400
-            { response: I18n.t('pushmeup.errors.response.bad_request', I18n.t('pushmeup.amazon')), status_code: response.code}
+            { response: 'Bad request was sent to Amazon Fire', status_code: response.code}
           when 401
-            { response: I18n.t('pushmeup.errors.response.not_authenticated', I18n.t('pushmeup.amazon')), status_code: response.code}
+            { response: 'Error authenticating with Amazon Fire', status_code: response.code}
           when 500
-            { response: I18n.t('pushmeup.errors.response.server_internal_error', I18n.t('pushmeup.amazon')), status_code: response.code}
+            { response: 'Server internal error occurred with Amazon Fire', status_code: response.code}
           when 503
-            { response: I18n.t('pushmeup.errors.response.temporarily_unavailable', I18n.t('pushmeup.amazon')), status_code: response.code}
+            { response: 'Amazon Fire is temporarily unavailable', status_code: response.code}
           else
             # Do nothing
         end

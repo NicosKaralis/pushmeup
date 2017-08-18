@@ -114,8 +114,8 @@ module APNS
       end
 
       def start_connection(host)
-        raise Exceptions::PushmeupException.new(I18n.t('pushmeup.errors.internal.pem_is_not_set')) unless @pem_location
-        raise Exceptions::PushmeupException.new(I18n.t('pushmeup.errors.internal.pem_does_not_exist')) unless File.exists?(@pem_location)
+        raise Exceptions::PushmeupException.new('PEM is not set') unless @pem_location
+        raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
 
         context = OpenSSL::SSL::SSLContext.new
         context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
