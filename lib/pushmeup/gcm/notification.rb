@@ -18,7 +18,7 @@ module GCM
       elsif tokens.is_a?(String)
         @device_tokens = [tokens]
       else
-        raise Exception::PushmeupException.new(I18n.t('errors.internal.device_tokens_must_be_array_or_string'))
+        raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.device_tokens_must_be_array_or_string'))
       end
     end
 
@@ -26,7 +26,7 @@ module GCM
       if data.is_a?(Hash)
         @data = data
       else
-        raise Exception::PushmeupException.new(I18n.t('errors.internal.data_parameter_must_be_a_hash'))
+        raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.data_parameter_must_be_a_hash'))
       end
     end
 
@@ -38,7 +38,7 @@ module GCM
       if time_to_live.is_a?(Integer)
         @time_to_live = time_to_live
       else
-        raise Exception::PushmeupException.new(I18n.t('errors.internal.time_to_live_must_be_an_integer'))
+        raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.time_to_live_must_be_an_integer'))
       end
     end
 

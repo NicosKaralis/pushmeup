@@ -49,13 +49,13 @@ module FIRE
       params = {headers: headers, body: body}
       res = HTTPParty.post('https://api.amazon.com/auth/O2/token', params)
       return res.parsed_response if res.response.code.to_i == 200
-      raise Exception::PushmeupException.new(I18n.t('errors.internal.amazon_token'))
+      raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.amazon_token'))
     end
 
     private
       def prepare_and_send(notification)
         if !notification.consolidationKey.nil? && notification.expiresAfter.nil?
-          raise Exception::PushmeupException.new(I18n.t('errors.internal.consolidation_key_without_expires_after'))
+          raise Exception::PushmeupException.new(I18n.t('pushmeup.errors.internal.consolidation_key_without_expires_after'))
         end
         send_push(notification)
       end
@@ -87,15 +87,15 @@ module FIRE
       def build_response(response)
         case response.code
           when 200
-            { response: I18n.t('success'), body: JSON.parse(response.body), headers: response.headers, status_code: response.code}
+            { response: I18n.t('pushmeup.success'), body: JSON.parse(response.body), headers: response.headers, status_code: response.code}
           when 400
-            { response: I18n.t('errors.response.bad_request', I18n.t('amazon')), status_code: response.code}
+            { response: I18n.t('pushmeup.errors.response.bad_request', I18n.t('pushmeup.amazon')), status_code: response.code}
           when 401
-            { response: I18n.t('errors.response.not_authenticated', I18n.t('amazon')), status_code: response.code}
+            { response: I18n.t('pushmeup.errors.response.not_authenticated', I18n.t('pushmeup.amazon')), status_code: response.code}
           when 500
-            { response: I18n.t('errors.response.server_internal_error', I18n.t('amazon')), status_code: response.code}
+            { response: I18n.t('pushmeup.errors.response.server_internal_error', I18n.t('pushmeup.amazon')), status_code: response.code}
           when 503
-            { response: I18n.t('errors.response.temporarily_unavailable', I18n.t('amazon')), status_code: response.code}
+            { response: I18n.t('pushmeup.errors.response.temporarily_unavailable', I18n.t('pushmeup.amazon')), status_code: response.code}
           else
             # Do nothing
         end
