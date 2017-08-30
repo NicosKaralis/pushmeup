@@ -51,6 +51,7 @@ module APNS
       @mutex.synchronize do
         with_connection do
           notifications.each do |notification|
+            puts notification.packaged_notification
             @ssl_connection.write(notification.packaged_notification)
           end
         end
@@ -82,6 +83,8 @@ module APNS
           # If no @ssl is created or if @ssl is closed we need to start it
           if @ssl_connection.nil? || @socket.nil? || @ssl_connection.closed? || @socket.closed?
             @socket, @ssl_connection = open_connection
+            puts @ssl_connection.inspect
+            puts @socket.inspect
           end
 
           yield
@@ -124,6 +127,10 @@ module APNS
         socket = TCPSocket.new(host, APNS_TCP_REMOTE_PORT)
         ssl = OpenSSL::SSL::SSLSocket.new(socket, context)
         ssl.connect
+
+        puts socket.inspect
+        puts ssl.inspect
+        puts socket, ssl
 
         return socket, ssl
       end
