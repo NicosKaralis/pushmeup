@@ -108,31 +108,41 @@ module APNS
       end
 
       def open_connection
-        start_connection(@host)
-      end
-
-      def feedback_connection
-        remote_host = @host.gsub(GATEWAY, FEEDBACK)
-        start_connection(remote_host)
-      end
-
-      def start_connection(host)
         raise Exceptions::PushmeupException.new('PEM is not set') unless @pem_location
         raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
 
-        context = OpenSSL::SSL::SSLContext.new
-        context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
-        context.key = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
+        context      = OpenSSL::SSL::SSLContext.new
+        context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
+        context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
 
-        socket = TCPSocket.new(host, APNS_TCP_REMOTE_PORT)
-        ssl = OpenSSL::SSL::SSLSocket.new(socket, context)
+        sock         = TCPSocket.new(self.host, self.port)
+        ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
         ssl.connect
 
-        puts socket.inspect
+        puts sock.inspect
         puts ssl.inspect
-        puts socket, ssl
 
-        return socket, ssl
+        return sock, ssl
+      end
+
+      def feedback_connection
+        raise Exceptions::PushmeupException.new('PEM is not set') unless @pem_location
+        raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
+
+        context      = OpenSSL::SSL::SSLContext.new
+        context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
+        context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+
+        fhost = self.host.gsub('gateway','feedback')
+
+        sock         = TCPSocket.new(fhost, APNS_TCP_REMOTE_PORT)
+        ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
+        ssl.connect
+
+        puts sock.inspect
+        puts ssl.inspect
+
+        return sock, ssl
       end
   end
 end
