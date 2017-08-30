@@ -51,7 +51,6 @@ module APNS
       @mutex.synchronize do
         with_connection do
           notifications.each do |notification|
-            puts notification.packaged_notification
             @ssl_connection.write(notification.packaged_notification)
           end
         end
@@ -83,8 +82,6 @@ module APNS
           # If no @ssl is created or if @ssl is closed we need to start it
           if @ssl_connection.nil? || @socket.nil? || @ssl_connection.closed? || @socket.closed?
             @socket, @ssl_connection = open_connection
-            puts @ssl_connection.inspect
-            puts @socket.inspect
           end
 
           yield
@@ -112,10 +109,10 @@ module APNS
         raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
 
         context      = OpenSSL::SSL::SSLContext.new
-        context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-        context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+        context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
+        context.key  = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
 
-        sock         = TCPSocket.new(self.host, self.port)
+        sock         = TCPSocket.new(@host, @port)
         ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
         ssl.connect
 
@@ -130,10 +127,10 @@ module APNS
         raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
 
         context      = OpenSSL::SSL::SSLContext.new
-        context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-        context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+        context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
+        context.key  = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
 
-        fhost = self.host.gsub('gateway','feedback')
+        fhost = @host.gsub('gateway','feedback')
 
         sock         = TCPSocket.new(fhost, APNS_TCP_REMOTE_PORT)
         ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
