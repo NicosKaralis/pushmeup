@@ -105,41 +105,27 @@ module APNS
       end
 
       def open_connection
-        raise Exceptions::PushmeupException.new('PEM is not set') unless @pem_location
-        raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
-
-        context      = OpenSSL::SSL::SSLContext.new
-        context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
-        context.key  = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
-
-        sock         = TCPSocket.new(@host, @port)
-        ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
-        ssl.connect
-
-        puts sock.inspect
-        puts ssl.inspect
-
-        return sock, ssl
+        start_connection(@host, @port)
       end
 
       def feedback_connection
+        remote_host = @host.gsub(GATEWAY, FEEDBACK)
+        start_connection(remote_host, APNS_TCP_REMOTE_PORT)
+      end
+
+      def start_connection(host, port)
         raise Exceptions::PushmeupException.new('PEM is not set') unless @pem_location
         raise Exceptions::PushmeupException.new('PEM does not exist') unless File.exists?(@pem_location)
 
-        context      = OpenSSL::SSL::SSLContext.new
+        context = OpenSSL::SSL::SSLContext.new
         context.cert = OpenSSL::X509::Certificate.new(File.read(@pem_location))
-        context.key  = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
+        context.key = OpenSSL::PKey::RSA.new(File.read(@pem_location), @pem_password)
 
-        fhost = @host.gsub('gateway','feedback')
+        socket = TCPSocket.new(host, port)
+        ssl_connection = OpenSSL::SSL::SSLSocket.new(socket, context)
+        ssl_connection.connect
 
-        sock         = TCPSocket.new(fhost, APNS_TCP_REMOTE_PORT)
-        ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
-        ssl.connect
-
-        puts sock.inspect
-        puts ssl.inspect
-
-        return sock, ssl
+        return socket, ssl_connection
       end
   end
 end
