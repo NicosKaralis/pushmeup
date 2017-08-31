@@ -2,20 +2,19 @@ module FIRE
   class Notification
     attr_accessor :device_token, :data, :consolidationKey, :expiresAfter
 
-    def initialize(token, data, options = {})
-      self.device_token = token
+    def initialize(device_token, data, options = {})
+      self.device_token = device_token
       self.data = data
 
-      @consolidationKey = options[:consolidationKey]
-      @expiresAfter = options[:expiresAfter]
+      @consolidationKey = options[:consolidationKey] if options
+      @expiresAfter = options[:expiresAfter] if options
     end
 
-    def device_token=(token)
-
-      if token.is_a?(String)
-        @device_token = token
+    def device_token=(device_token)
+      if device_token.is_a?(String)
+        @device_token = device_token
       else
-        raise "device_token needs to be String"
+        raise Exceptions::PushmeupException.new('Device token must be a String')
       end
     end
 
@@ -23,7 +22,7 @@ module FIRE
       if data.is_a?(Hash)
         @data = data
       else
-        raise "data parameter must be the type of Hash"
+        raise Exceptions::PushmeupException.new('Data must be a Hash')
       end
     end
 
@@ -31,7 +30,7 @@ module FIRE
       if expiresAfter.is_a?(Integer)
         @expiresAfter = expiresAfter
       else
-        raise %q{"expiresAfter" must be seconds as an integer value, like "100"}
+        raise Exceptions::PushmeupException.new('Expires after must be an Integer')
       end
     end
 
@@ -41,6 +40,5 @@ module FIRE
           consolidationKey == that.consolidationKey &&
           expiresAfter == that.expiresAfter
     end
-
   end
 end

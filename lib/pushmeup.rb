@@ -1,4 +1,5 @@
-require "pushmeup/version"
-require "pushmeup/apple"
-require "pushmeup/android"
-require "pushmeup/amazon"
+require 'pushmeup/version'
+require 'pushmeup/apns'
+require 'pushmeup/gcm'
+require 'pushmeup/fire'
+require 'pushmeup/exceptions'
