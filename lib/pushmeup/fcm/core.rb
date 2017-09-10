@@ -10,11 +10,12 @@ module FCM
   format :json
 
   @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
+  @logger = nil
 
   GROUP_NOTIFICATION_BASE_URI = 'https://android.googleapis.com/gcm'
 
   class << self
-    attr_accessor :timeout, :api_key
+    attr_accessor :timeout, :api_key, :logger
   end
 
   def self.send_notification(registration_id, data={}, options={}, api_key=nil)
@@ -42,6 +43,8 @@ module FCM
         }
     }
 
+    self.log_event "Sending to FCM params #{params}"
+
     response = self.post('/send', params)
     build_response(response, notification_ids)
   end
@@ -62,6 +65,8 @@ module FCM
     }
 
     response = nil
+
+    self.log_event "Creating notification key to FCM params #{params}"
 
     for_uri(GROUP_NOTIFICATION_BASE_URI) do
       response = self.post('/notification', params.merge(@client_options))
@@ -162,7 +167,13 @@ module FCM
 
   def self.build_response(response, registration_ids = [])
     body = response.body || {}
+
+    self.log_event "Parsing response from FCM: #{body}"
+
     response_hash = {body: body, headers: response.headers, status_code: response.code}
+
+    self.log_event "Response hash from FCM #{response_hash}"
+
     case response.code
       when 200
         response_hash[:response] = 'success'
@@ -213,6 +224,12 @@ module FCM
 
   def self.is_not_registered?(result)
     result['error'] == 'NotRegistered'
+  end
+
+  def self.log_event(msg)
+    return unless self.logger
+
+    logger.info msg
   end
 
 end
