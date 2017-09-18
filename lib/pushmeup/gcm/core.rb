@@ -72,11 +72,11 @@ module GCM
     }
     body = {
       :registration_ids => n.device_tokens,
-      :data => n.data,
       :collapse_key => n.collapse_key,
       :time_to_live => n.time_to_live,
       :delay_while_idle => n.delay_while_idle
     }
+    n.silent ? body[:data] = n.data : body[:notification] = n.data
     return self.send_to_server(headers, body.to_json)
   end
 
