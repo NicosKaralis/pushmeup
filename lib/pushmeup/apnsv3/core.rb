@@ -17,8 +17,6 @@ module APNSV3
   end
 
   def self.send_notification(device_token, message, options = {})
-
-
     n = APNSV3::Notification.new(device_token, message)
     self.send_individual_notification(n, options)
   end
@@ -48,7 +46,6 @@ module APNSV3
 
     @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
 
-    self.check_before_send
     self.send_push(notification)
   end
 
@@ -98,28 +95,21 @@ module APNSV3
 
   def self.certificate
     self.log_event "[APNSv3] Trying to set certificate with content of #{@cert_pem}"
-    @certificate ||= begin
+    unless @certificate
       if @cert_pem.respond_to?(:read)
         cert = @cert_pem.read
         @cert_pem.rewind if @cert_pem.respond_to?(:rewind)
       else
         begin
-        cert = File.read(@cert_pem)
+          cert = File.read(@cert_pem)
         rescue SystemCallError => e
-        self.log_event "[APNSv3] Does not understand read and its not a path to a file or directory, setting as plain string. Content: #{@cert_pem}"
-        cert = @cert_pem
+          self.log_event "[APNSv3] Does not understand read and its not a path to a file or directory, setting as plain string. Content: #{@cert_pem}"
+          cert = @cert_pem
         end
       end
-      cert
+      @certificate = cert
     end
-  end
-
-  def self.check_before_send
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.cert_pem
-    raise "The path to your pem file does not exist!" unless self.cert_pem.is_a?(String) and File.exist?(self.cert_pem)
-
-    raise "The path to your key file is not set. (APNS.key = '/path/to/key')" unless self.cert_key
-    raise "The path to your apple key file does not exist!" unless File.exist?(self.cert_key)
+    @certificate
   end
 
   def self.send_push(notification)
