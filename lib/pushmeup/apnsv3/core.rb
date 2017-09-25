@@ -13,10 +13,12 @@ module APNSV3
   @mutex = Mutex.new
 
   class << self
-    attr_accessor :host, :cert_pem, :port, :pass, :cert_key
+    attr_accessor :host, :cert_pem, :port, :pass, :cert_key, :logger
   end
 
   def self.send_notification(device_token, message, options = {})
+
+
     n = APNSV3::Notification.new(device_token, message)
     self.send_individual_notification(n, options)
   end
@@ -32,6 +34,7 @@ module APNSV3
   end
 
   def self.set_cert_key_and_pem(cert_key, cert_pem)
+    self.log_event "[APNSv3] Setting cert key #{cert_key} with cert_pem #{cert_pem}"
     @cert_pem = cert_pem if @cert_pem.nil?
     @cert_key = cert_key if @cert_key.nil?
   end
@@ -39,8 +42,8 @@ module APNSV3
   def self.send_individual_notification(notification, options = {})
     @url = options[:url] || APPLE_PRODUCTION_SERVER_URL
 
-    @cert_pem = options[:cert_pem] if @cert_pem.nil? and options[:cert_pem]
-    @cert_key = options[:cert_key] if @cert_key.nil? and options[:cert_key]
+    @cert_pem ||= options[:cert_pem] if @cert_pem.nil? and options[:cert_pem]
+    @cert_key ||= options[:cert_key] if @cert_key.nil? and options[:cert_key]
     @connect_timeout = options[:connect_timeout] || 30
 
     @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
@@ -94,12 +97,18 @@ module APNSV3
   end
 
   def self.certificate
+    self.log_event "[APNSv3] Trying to set certificate with content of #{@cert_pem}"
     @certificate ||= begin
       if @cert_pem.respond_to?(:read)
         cert = @cert_pem.read
         @cert_pem.rewind if @cert_pem.respond_to?(:rewind)
       else
+        begin
         cert = File.read(@cert_pem)
+        rescue SystemCallError => e
+        self.log_event "[APNSv3] Does not understand read and its not a path to a file or directory, setting as plain string. Content: #{@cert_pem}"
+        cert = @cert_pem
+        end
       end
       cert
     end
@@ -114,6 +123,7 @@ module APNSV3
   end
 
   def self.send_push(notification)
+    self.log_event "[APNSv3] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
     response = self.send_to_server(notification, request)
@@ -122,7 +132,9 @@ module APNSV3
   end
 
   def self.send_to_server(notification, request)
-    raise "Error creating http2 client for notification to device #{notification.device_token}" unless @client
+    msg = "Error creating http2 client for notification to device #{notification.device_token}"
+    self.log_event "[APNSv3] #{msg}"
+    raise msg unless @client
 
     response = @client.call(:post, request.path,
                             body: request.body,
@@ -130,11 +142,13 @@ module APNSV3
                             timeout: options[:timeout]
     )
 
+    self.log_event "[APNSv3] Got response from APNSv3 server parsing response now."
     return self.build_response(response)
   end
 
   def self.build_response(response)
     unless response.ok?
+      self.log_event "[APNSv3] Response not valid. Error code #{response.code}"
       return case response.code
                when 400
                  {:response => 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields. Bad request', :status_code => response.code}
@@ -157,7 +171,14 @@ module APNSV3
              end
     end
 
+    self.log_event "[APNSv3] Response successful headers: #{response.headers} and content #{response.body}"
     {:response => 'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => response.code}
+  end
+
+  def self.log_event(msg)
+    return unless self.logger
+
+    logger.info msg
   end
 
 end
