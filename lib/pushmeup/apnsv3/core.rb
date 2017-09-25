@@ -109,6 +109,7 @@ module APNSV3
       end
       @certificate = cert
     end
+    self.log_event "[APNSv3] Returning certificate set #{@certificate}"
     @certificate
   end
 
@@ -122,10 +123,14 @@ module APNSV3
   end
 
   def self.send_to_server(notification, request)
-    msg = "Error creating http2 client for notification to device #{notification.device_token}"
-    self.log_event "[APNSv3] #{msg}"
-    raise msg unless @client
+    unless @client
+      msg = "Error creating http2 client for notification to device #{notification.device_token}"
+      self.log_event "[APNSv3] #{msg}"
+      raise msg
+    end
 
+    self.log_event "[APNSv3] Adding post to path #{request.path}, with headers #{request.headers} and body #{request.body}"
+    
     response = @client.call(:post, request.path,
                             body: request.body,
                             headers: request.headers,
