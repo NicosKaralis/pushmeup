@@ -117,6 +117,8 @@ module APNSV3
     self.log_event "[APNSv3] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
+    self.log_event "[APNSv3] Using client instance #{@client}"
+
     response = self.send_to_server(notification, request)
     @client.close if @client
     return response
@@ -130,7 +132,7 @@ module APNSV3
     end
 
     self.log_event "[APNSv3] Adding post to path #{request.path}, with headers #{request.headers} and body #{request.body}"
-    
+
     response = @client.call(:post, request.path,
                             body: request.body,
                             headers: request.headers,
