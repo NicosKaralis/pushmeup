@@ -35,17 +35,19 @@ describe Pushmeup do
     context "Sending request via APNSv3" do
       it 'create request with something that is not a notification' do
         notification = 22
-        expect{ APNSV3::Request.new notification }.to raise_error(RuntimeError)
+        expect { APNSV3::Request.new notification }.to raise_error(RuntimeError)
       end
 
     end
 
   end
 
-  context "Make request to API" do
+  context "Make request to API with invalid certs" do
     let(:device_token) { "2hudhuwhe273272376-12121hsha" }
     let(:pem) { "example.pem" }
     let(:cert_key) { "a_cert_key" }
+    let(:cert) { 'a_cert' }
+    let(:file_like_object) { double(cert) }
 
     before(:each) do
       APNSV3.set_cert_key_and_pem cert_key, pem
@@ -62,16 +64,85 @@ describe Pushmeup do
       OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
       OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
 
+      allow(File).to receive(:open).with('file_name').and_return(file_like_object)
+      file_like_object.stub(:read).and_return(cert)
+
       device_token = "2hudhuwhe273272376-12121hsha"
-      response = APNSV3.send_notification(device_token, "a message")
-
-
-
+      expect { APNSV3.send_notification(device_token, "a message") }.to raise_error StandardError
     end
 
-    context "when making a requets to the API fails" do
+    it "when making a requets to the API succeeds" do
+      class X509Stub
+      end
 
+      class ReponseHttp2
+        attr_accessor :code, :headers, :body
 
+        def initialize
+          self.code = 500
+          self.headers = {}
+          self.body = {"some_result": 222}.to_json
+        end
+
+        def ok?
+          self.code == 200
+        end
+      end
+
+      class NetHttp2Client
+        def call(*args)
+          return ReponseHttp2.new
+        end
+      end
+
+      NetHttp2::Client.stub(:new).and_return(NetHttp2Client.new)
+      OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
+      OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
+
+      allow(File).to receive(:open).with('file_name').and_return(file_like_object)
+      file_like_object.stub(:read).and_return(cert)
+
+      device_token = "2hudhuwhe273272376-12121hsha"
+      response = APNSV3.send_notification(device_token, "a message")
+      expected = {:response=>"There was an internal error in the GCM server while trying to process the request.", :status_code=>500}
+      expect(response).to eq expected
+    end
+
+    it "when making a requets to the API succeeds" do
+      class X509Stub
+      end
+
+      class ReponseHttp2
+        attr_accessor :code, :headers, :body
+
+        def initialize
+          self.code = 200
+          self.headers = {}
+          self.body = {"some_result": 222}.to_json
+        end
+
+        def ok?
+          self.code == 200
+        end
+      end
+
+      class NetHttp2Client
+        def call(*args)
+          return ReponseHttp2.new
+        end
+      end
+
+      NetHttp2::Client.stub(:new).and_return(NetHttp2Client.new)
+      OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
+      OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
+
+      allow(File).to receive(:open).with('file_name').and_return(file_like_object)
+      file_like_object.stub(:read).and_return(cert)
+
+      device_token = "2hudhuwhe273272376-12121hsha"
+      response = APNSV3.send_notification(device_token, "a message")
+      expected = {:response => "success", :body => {"some_result" => 222}, :headers => {}, :status_code => 200}
+      expect(response).to eq expected
     end
   end
 end

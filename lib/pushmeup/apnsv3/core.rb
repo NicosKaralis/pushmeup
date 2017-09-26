@@ -46,7 +46,7 @@ module APNSV3
 
     @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
 
-    self.send_push(notification)
+    self.send_push(notification, options)
   end
 
   protected
@@ -113,19 +113,19 @@ module APNSV3
     @certificate
   end
 
-  def self.send_push(notification)
+  def self.send_push(notification, options)
     self.log_event "[APNSv3] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
     self.log_event "[APNSv3] Using client instance #{@client}"
 
-    response = self.send_to_server(notification, request)
-    @client.close if @client
+    response = self.send_to_server(notification, request, options)
+    @client.close if @client and @client.respond_to? :close
     return response
   end
 
-  def self.send_to_server(notification, request)
-    unless @client
+  def self.send_to_server(notification, request, options)
+    if @client.nil?
       msg = "Error creating http2 client for notification to device #{notification.device_token}"
       self.log_event "[APNSv3] #{msg}"
       raise msg
