@@ -15,7 +15,7 @@ describe Pushmeup do
 
       context "when the notification creation fails" do
         it "message should not be anything than a Hash or a String" do
-          expect { APNSV3::Notification.new("id", 2) }.to raise_error Exception
+          expect {APNSV3::Notification.new("id", 2)}.to raise_error Exception
         end
       end
     end
@@ -35,7 +35,7 @@ describe Pushmeup do
     context "Sending request via APNSv3" do
       it 'create request with something that is not a notification' do
         notification = 22
-        expect { APNSV3::Request.new notification }.to raise_error(RuntimeError)
+        expect {APNSV3::Request.new notification}.to raise_error(RuntimeError)
       end
 
     end
@@ -43,22 +43,19 @@ describe Pushmeup do
   end
 
   context "Make request to API with invalid certs" do
-    let(:device_token) { "2hudhuwhe273272376-12121hsha" }
-    let(:pem) { "example.pem" }
-    let(:cert_key) { "a_cert_key" }
-    let(:cert) { 'a_cert' }
-    let(:file_like_object) { double(cert) }
-
-    before(:each) do
-      APNSV3.set_cert_key_and_pem cert_key, pem
-    end
+    let(:device_token) {"2hudhuwhe273272376-12121hsha"}
+    let(:pem) {"example.pem"}
+    let(:cert_key) {"a_cert_key"}
+    let(:cert) {'a_cert'}
+    let(:file_like_object) {double(cert)}
+    let(:options) {{:cert_key => cert_key, :cert_pem => pem}}
 
     it "when making a simple request to the API" do
       class X509Stub
       end
 
-      expect(APNSV3.cert_key).to eq cert_key
-      expect(APNSV3.cert_pem).to eq pem
+      expect(APNSV3.cert_key).to eq nil
+      expect(APNSV3.cert_pem).to eq nil
 
       NetHttp2::Client.stub(:new)
       OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
@@ -68,7 +65,7 @@ describe Pushmeup do
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
-      expect { APNSV3.send_notification(device_token, "a message") }.to raise_error StandardError
+      expect {APNSV3.send_notification(device_token, "a message", options)}.to raise_error StandardError
     end
 
     it "when making a requets to the API succeeds" do
@@ -103,8 +100,10 @@ describe Pushmeup do
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
-      response = APNSV3.send_notification(device_token, "a message")
-      expected = {:response=>"There was an internal error in the GCM server while trying to process the request.", :status_code=>500}
+      response = APNSV3.send_notification(device_token, "a message", options)
+      expected = {:response => "There was an internal error in the GCM server while trying to process the request.", :status_code => 500}
+
+      expect(APNSV3.cert_key).to eq (cert_key)
       expect(response).to eq expected
     end
 
@@ -140,8 +139,9 @@ describe Pushmeup do
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
-      response = APNSV3.send_notification(device_token, "a message")
+      response = APNSV3.send_notification(device_token, "a message", options)
       expected = {:response => "success", :body => {"some_result" => 222}, :headers => {}, :status_code => 200}
+      expect(APNSV3.cert_key).to eq (cert_key)
       expect(response).to eq expected
     end
   end

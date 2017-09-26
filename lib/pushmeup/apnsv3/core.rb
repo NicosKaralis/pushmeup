@@ -34,16 +34,17 @@ module APNSV3
   def self.set_cert_key_and_pem(cert_key, cert_pem)
     self.log_event "[APNSv3] Setting cert key #{cert_key} with cert_pem #{cert_pem}"
     @cert_pem = cert_pem if @cert_pem.nil?
+    self.cert_pem = @cert_pem
     @cert_key = cert_key if @cert_key.nil?
+    self.cert_key = @cert_key
   end
 
   def self.send_individual_notification(notification, options = {})
     @url = options[:url] || APPLE_PRODUCTION_SERVER_URL
 
-    @cert_pem ||= options[:cert_pem] if @cert_pem.nil? and options[:cert_pem]
-    @cert_key ||= options[:cert_key] if @cert_key.nil? and options[:cert_key]
-    @connect_timeout = options[:connect_timeout] || 30
+    self.set_cert_key_and_pem options[:cert_key], options[:cert_pem]
 
+    @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@url, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
 
     self.send_push(notification, options)
