@@ -15,7 +15,7 @@ module FCM
     end
 
     def registration_ids=(registration_ids)
-      logger.info "Radha resgistration_ids ------ #{resgistration_ids.to_s}" if !registration_ids.nil?
+      Rails.logger.info "Radha resgistration_ids ------ #{resgistration_ids.to_s}" if !registration_ids.nil?
 
       if registration_ids.is_a?(Array)
         @registration_ids = registration_ids
