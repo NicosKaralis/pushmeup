@@ -32,7 +32,7 @@ module FCM
 
     post_body = build_post_body(registration_ids, notification.get_options)
 
-    Rails.logger.info "[FCM::to_json] #{post_body.to_json}"
+    puts "[FCM::to_json] #{post_body.to_json}"
 
     params = {
         body: post_body.to_json,
