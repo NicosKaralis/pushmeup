@@ -34,7 +34,9 @@ module FCM
     notification_ids = notification.notifications_ids
 
     post_body = build_post_body(notification_ids, notification.get_options)
-
+    
+    Rails.logger.info "[FCM::to_json] #{post_body.to_json}"
+    
     params = {
         body: post_body.to_json,
         headers: {
@@ -162,7 +164,9 @@ module FCM
 
   def self.build_post_body(registration_ids, options = {})
     ids = registration_ids.is_a?(String) ? [registration_ids] : registration_ids
-    {registration_ids: ids}.merge(options)
+    data = {:data => options}
+    {registration_ids: ids}.merge(data)
+    #{registration_ids: ids}.merge(options)
   end
 
   def self.build_response(response, registration_ids = [])
