@@ -1,25 +1,28 @@
 module FCM
 
   class Notification
-    attr_accessor :notifications_ids, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity
+    attr_accessor :registration_ids, :data, :collapse_key, :time_to_live, :delay_while_idle, :identity, :condition
 
-    def initialize(tokens, data, options = {})
-      self.device_tokens = tokens
+    def initialize(registration_ids, data, options = {})
+      self.registration_ids = registration_ids
       self.data = data
 
       @collapse_key = options[:collapse_key]
       @time_to_live = options[:time_to_live]
       @delay_while_idle = options[:delay_while_idle]
       @identity = options[:identity]
+      @condition = options[:conditions]
     end
 
-    def device_tokens=(notifications_ids)
-      if notifications_ids.is_a?(Array)
-        @notifications_ids = notifications_ids
-      elsif notifications_ids.is_a?(String)
-        @notifications_ids = [notifications_ids]
+    def registration_ids=(registration_ids)
+      logger.info "Radha resgistration_ids ------ #{resgistration_ids.to_s}" if !registration_ids.nil?
+
+      if registration_ids.is_a?(Array)
+        @registration_ids = registration_ids
+      elsif registration_ids.is_a?(String)
+        @registration_ids = [registration_ids]
       else
-        raise "notifications_ids needs to be either an Array or String"
+        raise "registration_ids needs to be either an Array or String"
       end
     end
 
