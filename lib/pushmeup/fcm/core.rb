@@ -10,33 +10,30 @@ module FCM
   format :json
 
   @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
-  @logger = nil
 
-  GROUP_NOTIFICATION_BASE_URI = 'https://android.googleapis.com/gcm'
+  GROUP_NOTIFICATION_BASE_URI = 'https://fcm.googleapis.com/fcm'
 
   class << self
-    attr_accessor :timeout, :api_key, :logger
+    attr_accessor :timeout, :api_key
   end
 
-  def self.send_notification(registration_id, data={}, options={}, api_key=nil)
-    self.send_notifications(registration_id, data, options, api_key)
+  def self.send_notification(registration_id, data={}, options={})
+    self.send_notifications(registration_id, data, options)
   end
 
-  def self.send_notifications(registration_ids, data={}, options = {}, api_key = nil)
-    self.set_api_key api_key
-
+  def self.send_notifications(registration_ids, data={}, options = {})
     notification = Notification.new(registration_ids, data, options)
     self.prepare_and_send(notification)
   end
 
 
   def self.prepare_and_send(notification)
-    notification_ids = notification.notifications_ids
+    registration_ids = notification.registration_ids
 
-    post_body = build_post_body(notification_ids, notification.get_options)
-    
+    post_body = build_post_body(registration_ids, notification.get_options)
+
     Rails.logger.info "[FCM::to_json] #{post_body.to_json}"
-    
+
     params = {
         body: post_body.to_json,
         headers: {
@@ -45,12 +42,10 @@ module FCM
         }
     }
 
-    self.log_event "Sending to FCM params #{params}"
-
     response = self.post('/send', params)
-    build_response(response, notification_ids)
+    build_response(response, registration_ids)
   end
-
+=begin
   def self.create_notification_key(key_name, project_id, registration_ids = [], api_key = nil)
     self.set_api_key api_key
 
@@ -67,8 +62,6 @@ module FCM
     }
 
     response = nil
-
-    self.log_event "Creating notification key to FCM params #{params}"
 
     for_uri(GROUP_NOTIFICATION_BASE_URI) do
       response = self.post('/notification', params.merge(@client_options))
@@ -148,7 +141,7 @@ module FCM
       send_with_notification_key('/topics/' + topic, options)
     end
   end
-
+=end
   private
 
   def self.set_api_key(api_key)
@@ -166,18 +159,11 @@ module FCM
     ids = registration_ids.is_a?(String) ? [registration_ids] : registration_ids
     data = {:data => options}
     {registration_ids: ids}.merge(data)
-    #{registration_ids: ids}.merge(options)
   end
 
   def self.build_response(response, registration_ids = [])
     body = response.body || {}
-
-    self.log_event "Parsing response from FCM: #{body}"
-
     response_hash = {body: body, headers: response.headers, status_code: response.code}
-
-    self.log_event "Response hash from FCM #{response_hash}"
-
     case response.code
       when 200
         response_hash[:response] = 'success'
@@ -228,12 +214,6 @@ module FCM
 
   def self.is_not_registered?(result)
     result['error'] == 'NotRegistered'
-  end
-
-  def self.log_event(msg)
-    return unless self.logger
-
-    logger.info msg
   end
 
 end
