@@ -12,7 +12,7 @@ module FCM
   format :json
 
   @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
-  @logger = Logger.new(STDOUT)
+  @logger = nil
 
   GROUP_NOTIFICATION_BASE_URI = 'https://fcm.googleapis.com/fcm'
 
@@ -32,7 +32,7 @@ module FCM
 
   def self.prepare_and_send(notification)
     registration_ids = notification.registration_ids
-
+    @logger = Logger.new(STDOUT)
     @logger.debug "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
 
     post_body = build_post_body(registration_ids, notification.get_options)
