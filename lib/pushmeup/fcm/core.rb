@@ -157,11 +157,9 @@ module FCM
 
   def self.build_post_body(registration_ids, options = {})
     ids = registration_ids.is_a?(String) ? [registration_ids] : registration_ids
-    data = {:data => options}
-    puts " merging data #{data}"
-    result = {registration_ids: ids}.merge({:data => options})
-    puts " merging data #{result}"
-    {registration_ids: ids}.merge({:data => options})
+    data = options
+    result = {registration_ids: ids}.merge(data)
+    result
   end
 
   def self.build_response(response, registration_ids = [])
