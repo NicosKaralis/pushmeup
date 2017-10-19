@@ -2,6 +2,8 @@ require 'httparty'
 require 'cgi'
 require 'json'
 require_relative 'notification'
+require 'logger'
+
 
 module FCM
   include HTTParty
@@ -10,6 +12,7 @@ module FCM
   format :json
 
   @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
+  @logger = Logger.new(STDOUT)
 
   GROUP_NOTIFICATION_BASE_URI = 'https://fcm.googleapis.com/fcm'
 
@@ -30,9 +33,11 @@ module FCM
   def self.prepare_and_send(notification)
     registration_ids = notification.registration_ids
 
+    @logger.debug "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
+
     post_body = build_post_body(registration_ids, notification.get_options)
 
-    puts "[FCM::to_json] #{post_body.to_json}"
+    @logger.debug "[Pushmeup::FCM::prepare_and_send] request body json #{post_body.to_json}"
 
     params = {
         body: post_body.to_json,
