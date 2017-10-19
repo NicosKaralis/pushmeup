@@ -7,12 +7,12 @@ require 'logger'
 
 module FCM
   include HTTParty
+
   base_uri 'https://fcm.googleapis.com/fcm'
   default_timeout 30
   format :json
 
   @api_key = nil #Should set the fcm api_key here if you don't want to provide it in the client code.
-  @logger = nil
 
   GROUP_NOTIFICATION_BASE_URI = 'https://fcm.googleapis.com/fcm'
 
@@ -32,12 +32,12 @@ module FCM
 
   def self.prepare_and_send(notification)
     registration_ids = notification.registration_ids
-    @logger = ::Logger.new(STDOUT)
-    @logger.debug "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
+
+    Rails.logger.info "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
 
     post_body = build_post_body(registration_ids, notification.get_options)
 
-    @logger.debug "[Pushmeup::FCM::prepare_and_send] request body json #{post_body.to_json}"
+    Rails.logger.info "[Pushmeup::FCM::prepare_and_send] request body json #{post_body.to_json}"
 
     params = {
         body: post_body.to_json,
