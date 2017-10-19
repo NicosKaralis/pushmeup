@@ -32,7 +32,7 @@ module FCM
 
   def self.prepare_and_send(notification)
     registration_ids = notification.registration_ids
-    @logger = Logger.new(STDOUT)
+    @logger = ::Logger.new(STDOUT)
     @logger.debug "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
 
     post_body = build_post_body(registration_ids, notification.get_options)
