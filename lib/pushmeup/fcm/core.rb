@@ -2,9 +2,12 @@ require 'httparty'
 require 'cgi'
 require 'json'
 require_relative 'notification'
+require 'logger'
+
 
 module FCM
   include HTTParty
+
   base_uri 'https://fcm.googleapis.com/fcm'
   default_timeout 30
   format :json
@@ -30,9 +33,11 @@ module FCM
   def self.prepare_and_send(notification)
     registration_ids = notification.registration_ids
 
+    Rails.logger.info "[Pushmeup::FCM::prepare_and_send] registartion_ids #{registration_ids}"
+
     post_body = build_post_body(registration_ids, notification.get_options)
 
-    puts "[FCM::to_json] #{post_body.to_json}"
+    Rails.logger.info "[Pushmeup::FCM::prepare_and_send] request body json #{post_body.to_json}"
 
     params = {
         body: post_body.to_json,
@@ -45,103 +50,7 @@ module FCM
     response = self.post('/send', params)
     build_response(response, registration_ids)
   end
-=begin
-  def self.create_notification_key(key_name, project_id, registration_ids = [], api_key = nil)
-    self.set_api_key api_key
 
-    post_body = build_post_body(registration_ids, operation: 'create',
-                                notification_key_name: key_name)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
-    }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
-    end
-
-    build_response(response)
-  end
-
-
-  def self.add_registration_ids(key_name, project_id, notification_key, registration_ids, api_key = nil)
-    self.set_api_key api_key
-
-    post_body = build_post_body(registration_ids, operation: 'add',
-                                notification_key_name: key_name,
-                                notification_key: notification_key)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
-    }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
-    end
-    build_response(response)
-  end
-
-  def self.remove_registration_ids(key_name, project_id, notification_key, registration_ids, api_key = nil)
-    self.set_api_key api_key
-
-    post_body = build_post_body(registration_ids, operation: 'remove',
-                                notification_key_name: key_name,
-                                notification_key: notification_key)
-
-    params = {
-        body: post_body.to_json,
-        headers: {
-            'Content-Type' => 'application/json',
-            'project_id' => project_id,
-            'Authorization' => "key=#{@api_key}"
-        }
-    }
-
-    response = nil
-
-    for_uri(GROUP_NOTIFICATION_BASE_URI) do
-      response = self.post('/notification', params.merge(@client_options))
-    end
-    build_response(response)
-  end
-
-  def self.send_with_notification_key(notification_key, options = {}, api_key = nil)
-    self.set_api_key api_key
-
-    body = {to: notification_key}.merge(options)
-
-    params = {
-        body: body.to_json,
-        headers: {
-            'Authorization' => "key=#{@api_key}",
-            'Content-Type' => 'application/json'
-        }
-    }
-
-    response = self.post('/send', params.merge(@client_options))
-    build_response(response)
-  end
-
-  def self.send_to_topic(topic, options = {})
-    if topic =~ /[a-zA-Z0-9\-_.~%]+/
-      send_with_notification_key('/topics/' + topic, options)
-    end
-  end
-=end
   private
 
   def self.set_api_key(api_key)
@@ -157,8 +66,9 @@ module FCM
 
   def self.build_post_body(registration_ids, options = {})
     ids = registration_ids.is_a?(String) ? [registration_ids] : registration_ids
-    data = {:data => options}
-    {registration_ids: ids}.merge(data)
+    data = options
+    result = {registration_ids: ids}.merge(data)
+    result
   end
 
   def self.build_response(response, registration_ids = [])
