@@ -91,7 +91,6 @@ module APNSV3
       ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
       end
       ctx
-    end
   end
 
   def self.certificate
