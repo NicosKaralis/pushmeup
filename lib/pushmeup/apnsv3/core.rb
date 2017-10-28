@@ -83,36 +83,8 @@ module APNSV3
     end
   end
 
-
-  def self.open_connection
-    unless self.pem
-      msg = "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)"
-      @logger.debug("[Pushmeup::APNSV3::open_connection] #{msg}")
-      raise msg
-    end
-
-    unless File.exist?(self.cert_pem)
-      msg = "The path to your pem file does not exist!"
-      @logger.debug("[Pushmeup::APNSV3::open_connection] #{msg}")
-      raise msg
-    end
-
-    context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-
-    @logger.debug "[Pushmeup::with_connection] Successfully set up cert #{context.cert} and key #{context.key}"
-
-    sock         = TCPSocket.new(self.host, self.port)
-    ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
-    ssl.connect
-
-    @logger.debug "[Pushmeup::APNSV3::open_connection] Successfully created the sock ssl connection."
-    return sock, ssl
-  end
-
-
   def self.ssl_context
+    @ssl_context ||= begin
       ctx = OpenSSL::SSL::SSLContext.new
       begin
         p12 = OpenSSL::PKCS12.new(self.certificate, @cert_key)
@@ -123,10 +95,11 @@ module APNSV3
         ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
       end
       ctx
+    end
   end
 
   def self.certificate
-    Rails.logger.info "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
+    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
     unless @certificate
       if @pem.respond_to?(:read)
         cert = @pem.read
@@ -141,7 +114,7 @@ module APNSV3
       end
       @certificate = cert
     end
-    Rails.logger.info "[APNSv3] Returning certificate set #{@certificate}"
+    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
     @certificate
   end
 
