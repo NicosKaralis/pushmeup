@@ -26,6 +26,11 @@ module APNSV3
     _logger_route = options.has_key?("rails_log_route") ? options[:rails_log_route] : STDOUT
     @logger = Logger.new(_logger_route)
 
+    @host = options[:url] || APPLE_PRODUCTION_SERVER_URL
+    @port ||= options[:port]
+    @pem = options[:pem]
+    @pass = options[:pass]
+
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
@@ -41,11 +46,6 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    @host = options[:url] || APPLE_PRODUCTION_SERVER_URL
-    @port ||= options[:port]
-    @pem = options[:pem]
-    @pass = options[:pass]
-
     Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}, pem: #{@pem}, pass: #{@pass}"
 
     @connect_timeout = options[:connect_timeout] || 30
