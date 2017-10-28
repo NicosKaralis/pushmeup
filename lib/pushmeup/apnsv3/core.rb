@@ -26,7 +26,7 @@ module APNSV3
     _logger_route = options.has_key?("rails_log_route") ? options[:rails_log_route] : STDOUT
     @logger = Logger.new(_logger_route)
 
-    n = APNSV3::Notification.new(device_token, message, options[:bundle_id])
+    n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
 
