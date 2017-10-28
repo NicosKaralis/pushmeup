@@ -46,6 +46,8 @@ module APNSV3
     @pem = options[:pem]
     @pass = options[:pass]
 
+    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}, pem: #{@pem}, pass: #{@pass}"
+
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
     self.send_push(notification, options)
