@@ -12,6 +12,7 @@ module APNSV3
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
   @certificate = nil
+  @ssl_context = nil
 
   @mutex = Mutex.new
 
@@ -86,13 +87,8 @@ module APNSV3
   def self.ssl_context
     @ssl_context ||= begin
       ctx = OpenSSL::SSL::SSLContext.new
-      begin
-        p12 = OpenSSL::PKCS12.new(self.certificate, @cert_key)
-        ctx.key = p12.key
-        ctx.cert = p12.certificate
-      rescue OpenSSL::PKCS12::PKCS12Error
-        ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @cert_key)
-        ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
+      ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @cert_key)
+      ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
       end
       ctx
     end
