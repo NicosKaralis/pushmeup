@@ -7,10 +7,12 @@ module APNSV3
     attr_accessor :alert, :badge, :sound, :content_available, :category, :custom_payload, :url_args, :mutable_content
     attr_accessor :apns_id, :expiration, :priority, :topic, :apns_collapse_id
 
-    def initialize(device_token, message)
+    def initialize(device_token, message, bundle_id)
       raise "Notification needs to have either a Hash or String" unless message.is_a?(String) or message.is_a?(Hash)
 
       @device_token = device_token
+      #@topic = bundle_id
+      @topic = "AylaNetworks.iOS-Aura"
       @apns_id = SecureRandom.uuid
 
       if message.is_a?(Hash)
@@ -18,7 +20,6 @@ module APNSV3
         self.custom_payload = message[:custom_payload]
         self.priority = message[:priority]
         self.expiration = message[:expiration]
-        self.topic = message[:topic]
         self.apns_collapse_id = message[:apns_collapse_id]
         self.apns_id = message[:apns_id]
       else
