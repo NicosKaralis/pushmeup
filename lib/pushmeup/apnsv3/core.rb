@@ -1,6 +1,8 @@
 require 'net-http2'
 require 'openssl'
 require 'json'
+require 'logger'
+
 
 module APNSV3
 
@@ -13,7 +15,6 @@ module APNSV3
 
   @mutex = Mutex.new
 
-  @logger = nil
   @host = nil
   @port = 443
 
@@ -123,7 +124,7 @@ module APNSV3
   end
 
   def self.certificate
-    @logger.info "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
+    Rails.logger.info "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
     unless @certificate
       if @pem.respond_to?(:read)
         cert = @pem.read
@@ -132,18 +133,18 @@ module APNSV3
         begin
           cert = File.read(@pem)
         rescue SystemCallError => e
-          @logger.info "[Pushmeup::APNSV3::certificate] Does not understand read and its not a path to a file or directory, setting as plain string. Content: #{@cert_pem}"
+          Rails.logger.info "[Pushmeup::APNSV3::certificate] Does not understand read and its not a path to a file or directory, setting as plain string. Content: #{@cert_pem}"
           cert = @pem
         end
       end
       @certificate = cert
     end
-    @logger.info "[APNSv3] Returning certificate set #{@certificate}"
+    Rails.logger.info "[APNSv3] Returning certificate set #{@certificate}"
     @certificate
   end
 
   def self.send_push(notification, options)
-    @logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
     self.log_event "[APNSv3] Using client instance #{@client}"
@@ -156,11 +157,11 @@ module APNSV3
   def self.send_to_server(notification, request, options)
     if @client.nil?
       msg = "Error creating http2 client for notification to device #{notification.device_token}"
-      @logger.info "[Pushmeup::APNSV3::send_to_server] #{msg}"
+      Rails.logger.info "[Pushmeup::APNSV3::send_to_server] #{msg}"
       raise msg
     end
 
-    @logger.info "[Pushmeup::APNSV3::send_to_server] Adding post to path #{request.path}, with headers #{request.headers} and body #{request.body}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_to_server] Adding post to path #{request.path}, with headers #{request.headers} and body #{request.body}"
 
     response = @client.call(:post, request.path,
                             body: request.body,
@@ -168,13 +169,13 @@ module APNSV3
                             timeout: options[:timeout]
     )
 
-    @logger.info "[Pushmeup::APNSV3::send_to_server] Got response from APNSv3 server parsing response now."
+    Rails.logger.info "[Pushmeup::APNSV3::send_to_server] Got response from APNSv3 server parsing response now."
     return self.build_response(response)
   end
 
   def self.build_response(response)
     unless response.ok?
-      @logger.info "[Pushmeup::APNSV3::build_response] Response not valid. Error code #{response.code}"
+      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response not valid. Error code #{response.code}"
       return case response.code
                when 400
                  {:response => 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields. Bad request', :status_code => response.code}
@@ -197,7 +198,7 @@ module APNSV3
              end
     end
 
-    @logger.info "[Pushmeup::APNSV3::build_response] Response successful headers: #{response.headers} and content #{response.body}"
+    Rails.logger.info "[Pushmeup::APNSV3::build_response] Response successful headers: #{response.headers} and content #{response.body}"
     {:response => 'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => response.code}
   end
 
