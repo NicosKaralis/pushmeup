@@ -147,7 +147,7 @@ module APNSV3
     Rails.logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
-    self.log_event "[APNSv3] Using client instance #{@client}"
+    Rails.logger.info "[APNSv3] Using client instance #{@client}"
 
     response = self.send_to_server(notification, request, options)
     @client.close if @client and @client.respond_to? :close
