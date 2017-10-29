@@ -78,7 +78,6 @@ module APNSV3
 
     # Only force close if not persistent
     unless @persistent
-      @ssl_context.close
       @ssl_context = nil
       @client.close
     end
