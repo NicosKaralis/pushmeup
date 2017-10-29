@@ -150,7 +150,7 @@ module APNSV3
       Rails.logger.info "[Pushmeup::APNSV3::build_response] Response successful headers: #{response.headers} and content #{response.body}"
       {:response => 'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => status}
     else
-      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response . Error code #{status}"
+      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response . Error code #{status} and content #{response.body}"
       {:response => 'failure', :body => JSON.parse(response.body), :headers => response.headers, :status_code => status}
     end
   end
