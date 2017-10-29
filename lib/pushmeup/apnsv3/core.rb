@@ -144,32 +144,16 @@ module APNSV3
   end
 
   def self.build_response(response)
-    unless response.ok?
-      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response not valid. Error code #{response.code}"
-      return case response.code
-               when 400
-                 {:response => 'Only applies for JSON requests. Indicates that the request could not be parsed as JSON, or it contained invalid fields. Bad request', :status_code => response.code}
-               when 403
-                 {:response => 'There was an error with the certificate or with the provider authentication token.', :status_code => response.code}
-               when 405
-                 {:response => 'The request used a bad :method value. Only POST requests are supported.', :status_code => response.code}
-               when 410
-                 {:response => 'The device token is no longer active for the topic.', :status_code => response.code}
-               when 413
-                 {:response => 'The notification payload was too large.', :status_code => response.code}
-               when 429
-                 {:response => 'The server received too many requests for the same device token.', :status_code => response.code}
-               when 500
-                 {:response => 'There was an internal error in the GCM server while trying to process the request.', :status_code => response.code}
-               when 503
-                 {:response => 'Server is temporarily unavailable.', :status_code => response.code}
-               else
-                 {:response => 'Unknown Error.', :status_code => response.code}
-             end
-    end
 
-    Rails.logger.info "[Pushmeup::APNSV3::build_response] Response successful headers: #{response.headers} and content #{response.body}"
-    {:response => 'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => response.code}
+    status = response.headers[':status'] if response.headers
+
+    if status == '200'
+      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response successful headers: #{response.headers} and content #{response.body}"
+      {:response => 'success', :body => JSON.parse(response.body), :headers => response.headers, :status_code => status}
+    else
+      Rails.logger.info "[Pushmeup::APNSV3::build_response] Response . Error code #{status}"
+      {:response => 'failure', :body => JSON.parse(response.body), :headers => response.headers, :status_code => status}
+    end
   end
 
 end
