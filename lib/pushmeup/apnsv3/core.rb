@@ -87,11 +87,11 @@ module APNSV3
     @ssl_context ||= begin
       ctx = OpenSSL::SSL::SSLContext.new
       begin
-        p12      = OpenSSL::PKCS12.new(certificate, @cert_pass)
+        p12      = OpenSSL::PKCS12.new(self.certificate, @pass)
         ctx.key  = p12.key
         ctx.cert = p12.certificate
       rescue OpenSSL::PKCS12::PKCS12Error
-        ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @cert_key)
+        ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @pass)
         ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
       end
       ctx
