@@ -50,7 +50,7 @@ module APNSV3
     Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}, pem: #{@pem}, pass: #{@pass}"
 
     @connect_timeout = options[:connect_timeout] || 30
-    @client = NetHttp2::Client.new(@host, ssl_context: self.ssl_context, connect_timeout: @connect_timeout)
+    @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
     self.send_push(notification, options)
   end
 
@@ -84,18 +84,16 @@ module APNSV3
   end
 
   def self.ssl_context
-    @ssl_context ||= begin
-      ctx = OpenSSL::SSL::SSLContext.new
-      begin
-        p12      = OpenSSL::PKCS12.new(self.certificate, @pass)
-        ctx.key  = p12.key
-        ctx.cert = p12.certificate
-      rescue OpenSSL::PKCS12::PKCS12Error
-        ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @pass)
-        ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
-      end
-      ctx
+    ctx = OpenSSL::SSL::SSLContext.new
+    begin
+      p12 = OpenSSL::PKCS12.new(self.certificate, @pass)
+      ctx.key = p12.key
+      ctx.cert = p12.certificate
+    rescue OpenSSL::PKCS12::PKCS12Error
+      ctx.key = OpenSSL::PKey::RSA.new(self.certificate, @pass)
+      ctx.cert = OpenSSL::X509::Certificate.new(self.certificate)
     end
+    ctx
   end
 
   def self.certificate
