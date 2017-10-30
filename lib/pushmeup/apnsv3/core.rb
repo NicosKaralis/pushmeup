@@ -32,17 +32,19 @@ module APNSV3
     @pem = options[:pem]
     @pass = options[:pass]
 
+    @ssl_context = self.ssl_context
+
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
 
   def self.send_notifications(notifications, options = {})
     @mutex.synchronize do
-      self.with_connection do
+      #self.with_connection do
         notifications.each do |n|
           self.send_individual_notification(n, options)
         end
-      end
+      #end
     end
   end
 
