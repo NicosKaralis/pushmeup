@@ -47,11 +47,12 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}, pem: #{@pem}, pass: #{@pass}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
 
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
     self.send_push(notification, options)
+    @client.close
   end
 
 
@@ -74,12 +75,6 @@ module APNSV3
 
       attempts += 1
       retry
-    end
-
-    # Only force close if not persistent
-    unless @persistent
-      @ssl_context = nil
-      @client.close
     end
   end
 
