@@ -18,9 +18,9 @@ module APNSV3
         self.custom_payload = message[:custom_payload]
         self.priority = message[:priority]
         self.expiration = message[:expiration]
-        self.topic = message[:topic]
         self.apns_collapse_id = message[:apns_collapse_id]
         self.apns_id = message[:apns_id]
+        self.topic = message[:bundle_id]
       else
         self.alert = message
       end
