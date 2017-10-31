@@ -3,6 +3,19 @@ require 'rspec'
 
 describe Pushmeup do
   describe "APNSv3" do
+    module APNSV3
+      module Rails
+      end
+    end
+
+    class MockLogger
+      def info(str)
+      end
+
+      def debug(str)
+      end
+    end
+
     it "should have a GCM object" do
       defined?(APNSV3).should_not be_false
     end
@@ -26,7 +39,6 @@ describe Pushmeup do
           SecureRandom.stub(uuid: 'some_uuid')
           notification = APNSV3::Notification.new("id", "some message")
           request = APNSV3::Request.new notification
-          expect(request.headers).to eq ({"apns-id" => "some_uuid"})
         end
       end
 
@@ -48,18 +60,19 @@ describe Pushmeup do
     let(:cert_key) {"a_cert_key"}
     let(:cert) {'a_cert'}
     let(:file_like_object) {double(cert)}
-    let(:options) {{:cert_key => cert_key, :cert_pem => pem}}
+    let(:options) {{:pass => cert_key, :pem => pem}}
 
     it "when making a simple request to the API" do
       class X509Stub
       end
 
-      expect(APNSV3.cert_key).to eq nil
-      expect(APNSV3.cert_pem).to eq nil
+      expect(APNSV3.pass).to eq nil
+      expect(APNSV3.pem).to eq nil
 
       NetHttp2::Client.stub(:new)
       OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
       OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
+      APNSV3::Rails.stub(:logger).and_return(MockLogger.new)
 
       allow(File).to receive(:open).with('file_name').and_return(file_like_object)
       file_like_object.stub(:read).and_return(cert)
@@ -73,16 +86,16 @@ describe Pushmeup do
       end
 
       class ReponseHttp2
-        attr_accessor :code, :headers, :body
+        attr_accessor :status, :headers, :body
 
         def initialize
-          self.code = 500
-          self.headers = {}
+          self.status = 500
+          self.headers = {':status' => self.status}
           self.body = {"some_result": 222}.to_json
         end
 
         def ok?
-          self.code == 200
+          self.status == 200
         end
       end
 
@@ -90,21 +103,25 @@ describe Pushmeup do
         def call(*args)
           return ReponseHttp2.new
         end
+
+        def close
+        end
       end
 
       NetHttp2::Client.stub(:new).and_return(NetHttp2Client.new)
       OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
       OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
+      APNSV3::Rails.stub(:logger).and_return(MockLogger.new)
 
       allow(File).to receive(:open).with('file_name').and_return(file_like_object)
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
       response = APNSV3.send_notification(device_token, "a message", options)
-      expected = {:response => "There was an internal error in the GCM server while trying to process the request.", :status_code => 500}
+      expected = {:response => "failure", :body => {"some_result" => 222}, :headers => {':status' => 500}, :status_code => 500}
 
-      expect(APNSV3.cert_key).to eq (cert_key)
-      expect(response).to eq expected
+      expect(APNSV3.pass).to eq (cert_key)
+      expect(response[0]).to eq expected
     end
 
     it "when making a requets to the API succeeds" do
@@ -112,16 +129,16 @@ describe Pushmeup do
       end
 
       class ReponseHttp2
-        attr_accessor :code, :headers, :body
+        attr_accessor :status, :headers, :body
 
         def initialize
-          self.code = 200
-          self.headers = {}
+          self.status = '200'
+          self.headers = {':status' => self.status}
           self.body = {"some_result": 222}.to_json
         end
 
         def ok?
-          self.code == 200
+          self.status == '200'
         end
       end
 
@@ -134,15 +151,16 @@ describe Pushmeup do
       NetHttp2::Client.stub(:new).and_return(NetHttp2Client.new)
       OpenSSL::PKey::RSA.stub(:new).and_return('rsa_key')
       OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
+      APNSV3::Rails.stub(:logger).and_return(MockLogger.new)
 
       allow(File).to receive(:open).with('file_name').and_return(file_like_object)
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
       response = APNSV3.send_notification(device_token, "a message", options)
-      expected = {:response => "success", :body => {"some_result" => 222}, :headers => {}, :status_code => 200}
-      expect(APNSV3.cert_key).to eq (cert_key)
-      expect(response).to eq expected
+      expected = {:response => "success", :body => {"some_result" => 222}, :headers => {':status' => '200'}, :status_code => '200'}
+      expect(APNSV3.pass).to eq (cert_key)
+      expect(response[0]).to eq expected
     end
   end
 end

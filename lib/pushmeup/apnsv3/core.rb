@@ -39,11 +39,15 @@ module APNSV3
   end
 
   def self.send_notifications(notifications, options = {})
+    responses = []
+
     @mutex.synchronize do
-        notifications.each do |n|
-          self.send_individual_notification(n, options)
+        responses = notifications.map do |n|
+           self.send_individual_notification(n, options)
         end
     end
+
+    responses
   end
 
   def self.send_individual_notification(notification, options = {})
@@ -51,8 +55,9 @@ module APNSV3
 
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
-    self.send_push(notification, options)
+    response = self.send_push(notification, options)
     @client.close
+    response
   end
 
 
