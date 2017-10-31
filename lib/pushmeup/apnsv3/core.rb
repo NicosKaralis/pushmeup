@@ -40,11 +40,9 @@ module APNSV3
 
   def self.send_notifications(notifications, options = {})
     @mutex.synchronize do
-      #self.with_connection do
         notifications.each do |n|
           self.send_individual_notification(n, options)
         end
-      #end
     end
   end
 
@@ -59,26 +57,6 @@ module APNSV3
 
 
   protected
-
-  def self.with_connection
-    attempts = 1
-    @retries ||= 3
-
-    begin
-      # If no @ssl is created or if @ssl is closed we need to start it
-      if @ssl_context.blank?
-        @ssl_context = self.ssl_context
-      end
-
-      yield
-
-    rescue StandardError
-      raise unless attempts < @retries
-
-      attempts += 1
-      retry
-    end
-  end
 
   def self.ssl_context
     ctx = OpenSSL::SSL::SSLContext.new
