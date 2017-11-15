@@ -34,10 +34,19 @@ module APNSV3
     @pass = options[:pass]
 
     @ssl_context = self.ssl_context
+
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification] hello"
+    @logger.info "@logger [Pushmeup::APNSV3::send_notification] hello"
+
     bundle_id = topics
-    Rails.logger.info "[Pushmeup::APNSV3::bundle_id #{bundle_id}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
+    @logger.info "@logger [Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
+
     message.merge(bundle_id: bundle_id[0])
-    Rails.logger.info "[Pushmeup::APNSV3::send_notification message: #{JSON.parse(message)}"
+
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
+    @logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
+
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
@@ -117,8 +126,6 @@ module APNSV3
   def self.send_push(notification, options)
     Rails.logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
-
-    Rails.logger.info "[APNSv3] Using client instance #{@client}"
 
     response = self.send_to_server(notification, request, options)
     @client.close if @client and @client.respond_to? :close
