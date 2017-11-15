@@ -35,9 +35,9 @@ module APNSV3
 
     @ssl_context = self.ssl_context
     bundle_id = topics
-    Rails.logger.debug "[Pushmeup::APNSV3::bundle_id #{bundle_id}"
+    Rails.logger.info "[Pushmeup::APNSV3::bundle_id #{bundle_id}"
     message.merge(bundle_id: bundle_id[0])
-    Rails.logger.debug "[Pushmeup::APNSV3::send_notification message: #{JSON.parse(message)}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification message: #{JSON.parse(message)}"
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
