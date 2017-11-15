@@ -6,8 +6,9 @@ require 'logger'
 
 module APNSV3
 
-  APPLE_DEVELOPMENT_SERVER_URL = "https://api.development.push.apple.com"
-  APPLE_PRODUCTION_SERVER_URL = "https://api.push.apple.com"
+  APPLE_DEVELOPMENT_SERVER_URL = "https://api.development.push.apple.com".freeze
+  APPLE_PRODUCTION_SERVER_URL = "https://api.push.apple.com".freeze
+  UNIVERSAL_CERTIFICATE_EXTENSION = "1.2.840.113635.100.6.3.6".freeze
 
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
@@ -34,6 +35,8 @@ module APNSV3
 
     @ssl_context = self.ssl_context
 
+    bundle_id = self.topics
+    message.merge!(bundle_id: bundle_id[0])
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
@@ -51,8 +54,7 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
-
+    Rails.logger.debug "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
     response = self.send_push(notification, options)
@@ -77,7 +79,7 @@ module APNSV3
   end
 
   def self.certificate
-    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
+    Rails.logger.info "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
     unless @certificate
       if @pem.respond_to?(:read)
         cert = @pem.read
@@ -92,15 +94,32 @@ module APNSV3
       end
       @certificate = cert
     end
-    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
+    Rails.logger.info "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
     @certificate
   end
 
-  def self.send_push(notification, options)
-    Rails.logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
-    request = APNSV3::Request.new(notification)
+  def self.topics
+    begin
+      ext = self.extension(UNIVERSAL_CERTIFICATE_EXTENSION)
+      seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
+      seq.select.with_index { |_, index| index.even? }.map(&:value)
+    rescue Exception => e
+      Rails.logger.error "[Pushmeup::APNSV3::topics] exception"
+      [self.app_bundle_id]
+    end
+  end
 
-    Rails.logger.info "[APNSv3] Using client instance #{@client}"
+  def self.app_bundle_id
+    @ssl_context.cert.subject.to_a.find { |key, *_| key == "UID" }[1]
+  end
+
+  def self.extension(oid)
+    @ssl_context.cert.extensions.find { |ext| ext.oid == oid }
+  end
+
+  def self.send_push(notification, options)
+    Rails.logger.debug "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
+    request = APNSV3::Request.new(notification)
 
     response = self.send_to_server(notification, request, options)
     @client.close if @client and @client.respond_to? :close
