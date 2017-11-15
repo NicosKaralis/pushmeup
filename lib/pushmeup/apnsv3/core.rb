@@ -35,14 +35,8 @@ module APNSV3
 
     @ssl_context = self.ssl_context
 
-    Rails.logger.info "[Pushmeup::APNSV3::send_notification] hello"
-
     bundle_id = self.topics
-    Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
     message.merge!(bundle_id: bundle_id[0])
-
-    Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message.to_json)}"
-
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
@@ -60,8 +54,7 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
-
+    Rails.logger.debug "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
     response = self.send_push(notification, options)
@@ -106,22 +99,18 @@ module APNSV3
   end
 
   def self.topics
-    Rails.logger.info "[Pushmeup::APNSV3::topics] "
     begin
       ext = self.extension(UNIVERSAL_CERTIFICATE_EXTENSION)
       seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
       seq.select.with_index { |_, index| index.even? }.map(&:value)
     rescue Exception => e
-      Rails.logger.info "[Pushmeup::APNSV3::topics] exception "
+      Rails.logger.error "[Pushmeup::APNSV3::topics] exception"
       [self.app_bundle_id]
     end
   end
 
   def self.app_bundle_id
-    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] using ssl_context.cert"
-    bundle_id = @ssl_context.cert.subject.to_a.find { |key, *_| key == "UID" }[1]
-    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] #{bundle_id}"
-    bundle_id
+    @ssl_context.cert.subject.to_a.find { |key, *_| key == "UID" }[1]
   end
 
   def self.extension(oid)
@@ -129,7 +118,7 @@ module APNSV3
   end
 
   def self.send_push(notification, options)
-    Rails.logger.info "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
+    Rails.logger.debug "[Pushmeup::APNSV3::send_push] Sending request to APNS server for notification #{notification}"
     request = APNSV3::Request.new(notification)
 
     response = self.send_to_server(notification, request, options)
