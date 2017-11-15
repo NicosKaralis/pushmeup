@@ -118,7 +118,7 @@ module APNSV3
   end
 
   def self.app_bundle_id
-    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] "
+    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] using ssl_context.cert"
     bundle_id = @ssl_context.cert.subject.to_a.find { |key, *_| key == "UID" }[1]
     Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] #{bundle_id}"
     bundle_id
