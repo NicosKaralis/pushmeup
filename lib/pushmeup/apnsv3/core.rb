@@ -37,11 +37,11 @@ module APNSV3
 
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] hello"
 
-    #bundle_id = self.topics
-    #Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
-    #message.merge(bundle_id: bundle_id[0])
+    bundle_id = self.topics
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
+    message.merge(bundle_id: bundle_id[0])
 
-    #Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message.to_json)}"
 
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
@@ -119,13 +119,13 @@ module APNSV3
 
   def self.app_bundle_id
     Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] "
-    bundle_id = @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
+    bundle_id = @ssl_context.cert.subject.to_a.find { |key, *_| key == "UID" }[1]
     Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] #{bundle_id}"
     bundle_id
   end
 
   def self.extension(oid)
-    @certificate.extensions.find { |ext| ext.oid == oid }
+    @ssl_context.cert.extensions.find { |ext| ext.oid == oid }
   end
 
   def self.send_push(notification, options)
