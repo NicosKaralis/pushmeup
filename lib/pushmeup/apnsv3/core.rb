@@ -113,21 +113,25 @@ module APNSV3
     Rails.logger.info "[Pushmeup::APNSV3::topics] "
     @logger.info "@logger [Pushmeup::APNSV3::topics]"
     begin
-      ext = extension(UNIVERSAL_CERTIFICATE_EXTENSION)
+      ext = self.extension(UNIVERSAL_CERTIFICATE_EXTENSION)
       seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
       seq.select.with_index { |_, index| index.even? }.map(&:value)
     rescue Exception => e
       Rails.logger.info "[Pushmeup::APNSV3::topics] exception "
       @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id] exception"
-      [app_bundle_id]
+      [self.app_bundle_id]
     end
   end
 
-  def app_bundle_id
+  def self.app_bundle_id
     Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] "
     @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id]"
 
     @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
+  end
+
+  def self.extension(oid)
+    @certificate.extensions.find { |ext| ext.oid == oid }
   end
 
   def self.send_push(notification, options)
