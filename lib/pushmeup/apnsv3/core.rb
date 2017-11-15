@@ -33,7 +33,10 @@ module APNSV3
     @pass = options[:pass]
 
     @ssl_context = self.ssl_context
-
+    bundle_id = topics
+    Rails.logger.debug "[Pushmeup::APNSV3::bundle_id #{bundle_id}"
+    message.merge(bundle_id: bundle_id[0])
+    Rails.logger.debug "[Pushmeup::APNSV3::send_notification message: #{JSON.parse(message)}"
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
   end
@@ -51,7 +54,7 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
+    Rails.logger.debug "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
 
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
@@ -94,6 +97,20 @@ module APNSV3
     end
     Rails.logger.debug "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
     @certificate
+  end
+
+  def topics
+    if universal?
+      ext = extension(UNIVERSAL_CERTIFICATE_EXTENSION)
+      seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
+      seq.select.with_index { |_, index| index.even? }.map(&:value)
+    else
+      [app_bundle_id]
+    end
+  end
+
+  def app_bundle_id
+    @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
   end
 
   def self.send_push(notification, options)
