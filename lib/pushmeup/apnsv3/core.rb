@@ -36,16 +36,12 @@ module APNSV3
     @ssl_context = self.ssl_context
 
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] hello"
-    @logger.info "@logger [Pushmeup::APNSV3::send_notification] hello"
 
     bundle_id = self.topics
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
-    @logger.info "@logger [Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
-
     message.merge(bundle_id: bundle_id[0])
 
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
-    @logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
 
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
@@ -111,23 +107,21 @@ module APNSV3
 
   def self.topics
     Rails.logger.info "[Pushmeup::APNSV3::topics] "
-    @logger.info "@logger [Pushmeup::APNSV3::topics]"
     begin
       ext = self.extension(UNIVERSAL_CERTIFICATE_EXTENSION)
       seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
       seq.select.with_index { |_, index| index.even? }.map(&:value)
     rescue Exception => e
       Rails.logger.info "[Pushmeup::APNSV3::topics] exception "
-      @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id] exception"
       [self.app_bundle_id]
     end
   end
 
   def self.app_bundle_id
     Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] "
-    @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id]"
-
-    @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
+    bundle_id = @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
+    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] #{bundle_id}"
+    bundle_id
   end
 
   def self.extension(oid)
