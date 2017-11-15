@@ -39,7 +39,7 @@ module APNSV3
 
     bundle_id = self.topics
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
-    message.merge(bundle_id: bundle_id[0])
+    message.merge!(bundle_id: bundle_id[0])
 
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message.to_json)}"
 
