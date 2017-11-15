@@ -14,6 +14,9 @@ describe Pushmeup do
 
       def debug(str)
       end
+
+      def error(str)
+      end
     end
 
     it "should have a GCM object" do
@@ -83,6 +86,9 @@ describe Pushmeup do
 
     it "when making a requets to the API succeeds" do
       class X509Stub
+        def subject
+          ["UID", [1,2]]
+        end
       end
 
       class ReponseHttp2
@@ -117,7 +123,7 @@ describe Pushmeup do
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
-      response = APNSV3.send_notification(device_token, "a message", options)
+      response = APNSV3.send_notification(device_token, {"data" => "a message"}, options)
       expected = {:response => "failure", :body => {"some_result" => 222}, :headers => {':status' => 500}, :status_code => 500}
 
       expect(APNSV3.pass).to eq (cert_key)
@@ -126,6 +132,9 @@ describe Pushmeup do
 
     it "when making a requets to the API succeeds" do
       class X509Stub
+        def subject
+          ["UID", [1,2]]
+        end
       end
 
       class ReponseHttp2
@@ -153,11 +162,13 @@ describe Pushmeup do
       OpenSSL::X509::Certificate.stub(:new).and_return(X509Stub.new)
       APNSV3::Rails.stub(:logger).and_return(MockLogger.new)
 
+      X509Stub.stub(:subject).and_return(true)
+
       allow(File).to receive(:open).with('file_name').and_return(file_like_object)
       file_like_object.stub(:read).and_return(cert)
 
       device_token = "2hudhuwhe273272376-12121hsha"
-      response = APNSV3.send_notification(device_token, "a message", options)
+      response = APNSV3.send_notification(device_token, {"data" => "a message"}, options)
       expected = {:response => "success", :body => {"some_result" => 222}, :headers => {':status' => '200'}, :status_code => '200'}
       expect(APNSV3.pass).to eq (cert_key)
       expect(response[0]).to eq expected
