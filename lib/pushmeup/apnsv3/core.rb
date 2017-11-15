@@ -6,8 +6,9 @@ require 'logger'
 
 module APNSV3
 
-  APPLE_DEVELOPMENT_SERVER_URL = "https://api.development.push.apple.com"
-  APPLE_PRODUCTION_SERVER_URL = "https://api.push.apple.com"
+  APPLE_DEVELOPMENT_SERVER_URL = "https://api.development.push.apple.com".freeze
+  APPLE_PRODUCTION_SERVER_URL = "https://api.push.apple.com".freeze
+  UNIVERSAL_CERTIFICATE_EXTENSION = "1.2.840.113635.100.6.3.6".freeze
 
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
