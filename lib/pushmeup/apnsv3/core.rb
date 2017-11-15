@@ -107,7 +107,7 @@ module APNSV3
     end
     Rails.logger.info "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
     @certificate
-  endkkjj
+  end
 
   def self.topics
     Rails.logger.info "[Pushmeup::APNSV3::topics] "
