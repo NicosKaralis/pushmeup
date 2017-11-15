@@ -38,7 +38,7 @@ module APNSV3
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] hello"
     @logger.info "@logger [Pushmeup::APNSV3::send_notification] hello"
 
-    bundle_id = topics
+    bundle_id = self.topics
     Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
     @logger.info "@logger [Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
 
@@ -109,14 +109,10 @@ module APNSV3
     @certificate
   end
 
-  def topics
-    if universal?
+  def self.topics
       ext = extension(UNIVERSAL_CERTIFICATE_EXTENSION)
       seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
       seq.select.with_index { |_, index| index.even? }.map(&:value)
-    else
-      [app_bundle_id]
-    end
   end
 
   def app_bundle_id
