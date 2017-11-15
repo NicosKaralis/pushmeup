@@ -41,7 +41,7 @@ module APNSV3
     #Rails.logger.info "[Pushmeup::APNSV3::send_notification] bundle_id #{bundle_id}"
     #message.merge(bundle_id: bundle_id[0])
 
-    Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
+    #Rails.logger.info "[Pushmeup::APNSV3::send_notification] message: #{JSON.parse(message)}"
 
     n = APNSV3::Notification.new(device_token, message)
     self.send_notifications([n], options)
