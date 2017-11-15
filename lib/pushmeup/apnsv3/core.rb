@@ -64,7 +64,7 @@ module APNSV3
   end
 
   def self.send_individual_notification(notification, options = {})
-    Rails.logger.debug "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
+    Rails.logger.info "[Pushmeup::APNSV3::send_individual_notification host: #{@host}, port: #{@port}"
 
     @connect_timeout = options[:connect_timeout] || 30
     @client = NetHttp2::Client.new(@host, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
@@ -90,7 +90,7 @@ module APNSV3
   end
 
   def self.certificate
-    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
+    Rails.logger.info "[Pushmeup::APNSV3::certificate] Trying to set certificate with content of #{@pem}"
     unless @certificate
       if @pem.respond_to?(:read)
         cert = @pem.read
@@ -105,17 +105,28 @@ module APNSV3
       end
       @certificate = cert
     end
-    Rails.logger.debug "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
+    Rails.logger.info "[Pushmeup::APNSV3::certificate] Returning certificate set #{@certificate}"
     @certificate
   end
 
   def self.topics
+    Rails.logger.info "[Pushmeup::APNSV3::topics] "
+    @logger.info "@logger [Pushmeup::APNSV3::topics]"
+    begin
       ext = extension(UNIVERSAL_CERTIFICATE_EXTENSION)
       seq = OpenSSL::ASN1.decode(OpenSSL::ASN1.decode(ext.to_der).value[1].value)
       seq.select.with_index { |_, index| index.even? }.map(&:value)
+    rescue Exception => e
+      Rails.logger.info "[Pushmeup::APNSV3::topics] exception "
+      @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id] exception"
+      [app_bundle_id]
+    end
   end
 
   def app_bundle_id
+    Rails.logger.info "[Pushmeup::APNSV3::app_bundle_id] "
+    @logger.info "@logger [Pushmeup::APNSV3::app_bundle_id]"
+
     @certificate.subject.to_a.find { |key, *_| key == "UID" }[1]
   end
 
