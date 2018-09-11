@@ -7,7 +7,7 @@ module APNS
   @host = 'gateway.sandbox.push.apple.com'
   @port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
-  @pem = nil # this should be the path of the pem file not the contentes
+  @pem = nil # file path or string contents
   @pass = nil
   
   @persistent = false
@@ -97,12 +97,10 @@ protected
   end
   
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
+    pem_str      = self.pem_string
     context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    context.cert = OpenSSL::X509::Certificate.new(pem_str)
+    context.key  = OpenSSL::PKey::RSA.new(pem_str, self.pass)
 
     sock         = TCPSocket.new(self.host, self.port)
     ssl          = OpenSSL::SSL::SSLSocket.new(sock,context)
@@ -112,12 +110,10 @@ protected
   end
   
   def self.feedback_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
-    
+    pem_str      = self.pem_string
     context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    context.cert = OpenSSL::X509::Certificate.new(pem_str)
+    context.key  = OpenSSL::PKey::RSA.new(pem_str, self.pass)
     
     fhost = self.host.gsub('gateway','feedback')
     
@@ -127,5 +123,14 @@ protected
 
     return sock, ssl
   end
+
+  def self.pem_string
+    raise "pem file path or contents not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
+    is_pem_file = !self.pem.match?(/\n/)
+    raise "pem file does not exist. (#{self.pem})" if is_pem_file && !File.exist?(self.pem)
+
+    is_pem_file ? File.read(self.pem) : self.pem
+  end
   
 end
+
